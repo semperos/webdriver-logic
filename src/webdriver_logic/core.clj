@@ -3,6 +3,21 @@
   (:use clojure.core.logic)
   (:require [clj-webdriver.core :as wd]))
 
+;; Driver-based relations
+(defn current-urlo
+  [driver url]
+  (== (wd/current-url driver) url))
+
+(defn titleo
+  [driver title]
+  (== (wd/title driver) title))
+
+(defn page-sourceo
+  [driver page-source]
+  (== (wd/page-source driver) page-source))
+
+;; Element-based relations
+
 (defn attributeo
   [element attr value]
   (== (wd/attribute element attr) value))
@@ -52,3 +67,4 @@
 (defn location-once-visibleo
   [element loc-map]
   (== (wd/location-once-visible element) loc-map))
+
