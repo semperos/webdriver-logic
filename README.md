@@ -6,18 +6,33 @@ The WebDriver Logic library provides a "mirror" of the [clj-webdriver](https://g
 
 **Note:** This library is in the earliest stages of development. Feedback is welcome; use at your own risk.
 
-Here's a simple example where we find a single element with a class of `site-logo`:
+Here's a simple example where we find the first element with a class of `site-logo`:
 
 ```clj
-(def b (clj-webdriver.core/start {:browser :chrome} "https://github.com"))
+(def driver (clj-webdriver.core/start {:browser :chrome} "https://github.com"))
 
 (run 1 [q]
-  (classo b q "site-logo"))
-
+  (attributeo driver q :class "site-logo"))
 ;=> ({:webelement #<Tag: <a>, Class: site-logo, Href: https://github.com/, Object: [[ChromeDriver: chrome on MAC (6140efaa871769f2b7baa8fa885ebabc)] -> xpath: //*]>})
 ```
 
-More examples forthcoming (and `classo`, given possible ambiguity, will probably be ditched for something more general like `valueo` or `attro`).
+Or how about all the footer navigation sections?
+
+```clj
+(run* [q]
+  (attributeo driver q :class "footer_nav"))
+;=>
+;; ({:webelement
+;;   #<Tag: <ul>, Text: GitHub  About  Blog  Features  Contact & Support  Training  ..., Class: footer_nav, Object: [[ChromeDriver: chrome on MAC (6140efaa871769f2b7baa8fa885ebabc)] -> xpath: //*]>}
+;;  {:webelement
+;;   #<Tag: <ul>, Text: Clients  GitHub for Mac  GitHub for Windows  GitHub for Ecli..., Class: footer_nav, Object: [[ChromeDriver: chrome on MAC (6140efaa871769f2b7baa8fa885ebabc)] -> xpath: //*]>}
+;;  {:webelement
+;;   #<Tag: <ul>, Text: Tools  Gauges: Web analytics  Speaker Deck: Presentations  G..., Class: footer_nav, Object: [[ChromeDriver: chrome on MAC (6140efaa871769f2b7baa8fa885ebabc)] -> xpath: //*]>}
+;;  {:webelement
+;;   #<Tag: <ul>, Text: Documentation  GitHub Help  Developer API  GitHub Flavored M..., Class: footer_nav, Object: [[ChromeDriver: chrome on MAC (6140efaa871769f2b7baa8fa885ebabc)] -> xpath: //*]>})
+```
+
+Pretty simple - you could do that with regular CSS or XPath queries. More and larger examples forthcoming.
 
 ### Logic Programming Materials ###
 

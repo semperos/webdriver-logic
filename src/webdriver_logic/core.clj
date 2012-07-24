@@ -3,14 +3,14 @@
   (:use clojure.core.logic)
   (:require [clj-webdriver.core :as wd]))
 
-(defn classo
-  "A relation where `value` is the value of the class attribute for `elem`"
-  [driver elem value]
+(defn attributeo
+  "A relation where `elem` has value `value` for its `attr` attribute"
+  [driver elem attr value]
   (fn [a]
     (to-stream
      (->> (for [el (wd/find-elements driver {:xpath "//*"})
-                :let [attr :class]]
+                :let [attribute (keyword attr)]]
             (unify a
-                   [elem value]
-                   [el (wd/attribute el attr)]))
+                   [elem attr value]
+                   [el attribute (wd/attribute el attribute)]))
           (remove not)))))
