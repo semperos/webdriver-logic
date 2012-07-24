@@ -53,6 +53,28 @@ How about the first three elements on the page that have a legitimate `id` attri
 ;;    #<Tag: <div>, Text: Signup and Pricing  Explore GitHub  Features  Blog  Sign in, Id: header, Class: true clearfix, Object: [[ChromeDriver: chrome on MAC (1fc632cc0ded7fc2c7fa1db418329876)] -> xpath: //*]>}])
 ```
 
+And if we limit the search domain to a sub-set of elements on the page:
+
+```clj
+(binding [*search-domain* {:xpath "//div"}]
+  (run 3 [q]
+       (fresh [an-element a-value]
+              (attributeo b an-element :id a-value)
+              (!= a-value nil)
+              (!= a-value "")
+              (== q [a-value an-element]))))
+;=>
+;; (["wrapper"
+;;   {:webelement
+;;    #<Tag: <div>, Text: Signup and Pricing  Explore GitHub  Features  Blog  Sign in ..., Id: wrapper, Object: [[ChromeDriver: chrome on MAC (1fc632cc0ded7fc2c7fa1db418329876)] -> xpath: //div]>}]
+;;  ["header"
+;;   {:webelement
+;;    #<Tag: <div>, Text: Signup and Pricing  Explore GitHub  Features  Blog  Sign in, Id: header, Class: true clearfix, Object: [[ChromeDriver: chrome on MAC (1fc632cc0ded7fc2c7fa1db418329876)] -> xpath: //div]>}]
+;;  ["footer-push"
+;;   {:webelement
+;;    #<Tag: <div>, Id: footer-push, Object: [[ChromeDriver: chrome on MAC (1fc632cc0ded7fc2c7fa1db418329876)] -> xpath: //div]>}])
+```
+
 Pretty simple - you could do that with regular CSS or XPath queries. One could argue, however, that even at this simple point the declarative nature of `run*` is easier to follow and reason about than a series of explicit `find-element`, `filter` or `remove` calls.
 
 Let's make the inference work harder for us. Are there two links included in both the header and footer that have the same `href` value?
@@ -82,15 +104,15 @@ Let's make the inference work harder for us. Are there two links included in bot
 ;;    #<Tag: <a>, Text: Blog, Href: https://github.com/blog, Object: [[ChromeDriver: chrome on MAC (1fc632cc0ded7fc2c7fa1db418329876)] -> xpath: //a]>}])
 ```
 
-You'll notice the binding of `*search-domain*` to a subset of all anchor elements on the page. This drastically improves performance as relations like `attributeo` have to traverse all the elements on the page to find an answer. (Note: Performance issues of this kind will be improved once clj-webdriver's caching facilities are improved. Currently clj-webdriver limits caching to calls to `find-element`, which doesn't help with webdriver-logic).
+You'll notice again the binding of `*search-domain*` and `*child-search-domain*` to a subset of all anchor elements on the page. Though this is not necessary for the program to run, it drastically improves performance. Relations like `attributeo` have to traverse all the elements on the page to find an answer, which for Selenium-WebDriver means creating lots of objects. (Note: Performance issues of this kind will be improved once clj-webdriver's caching facilities are improved. Currently clj-webdriver limits caching to calls to `find-element`, which doesn't help with webdriver-logic).
 
-You can flash these elements to convince yourself that the above works:
+You can `flash` these elements to convince yourself that the above works:
 
 ```clj
 (require '[clj-webdriver.element :as el])
 
 (doseq [res (binding [*search-domain* {:xpath "//a"}
-                      *sub-search-domain* {:xpath ".//a"}]
+                      *child-search-domain* {:xpath ".//a"}]
               (run 2 [q]
                    (fresh [header-el footer-el the-href-value]
                           (attributeo b header-el :href the-href-value)
