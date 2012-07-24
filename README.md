@@ -32,7 +32,30 @@ Or how about all the footer navigation sections?
 ;;   #<Tag: <ul>, Text: Documentation  GitHub Help  Developer API  GitHub Flavored M..., Class: footer_nav, Object: [[ChromeDriver: chrome on MAC (6140efaa871769f2b7baa8fa885ebabc)] -> xpath: //*]>})
 ```
 
-Pretty simple - you could do that with regular CSS or XPath queries. More and larger examples forthcoming.
+How about the first three elements on the page that have a legitimate `id` attribute?
+
+```
+(run 3 [q]
+  (fresh [an-element a-value]
+    (attributeo b an-element :id a-value)
+    (!= a-value nil)
+    (!= a-value "")
+    (== q [a-value an-element])))
+;=>
+;; (["gauges-tracker"
+;;   {:webelement
+;;    #<Tag: <script>, Id: gauges-tracker, Source: https://secure.gaug.es/track.js, Object: [[ChromeDriver: chrome on MAC (1fc632cc0ded7fc2c7fa1db418329876)] -> xpath: //*]>}]
+;;  ["wrapper"
+;;   {:webelement
+;;    #<Tag: <div>, Text: Signup and Pricing  Explore GitHub  Features  Blog  Sign in ..., Id: wrapper, Object: [[ChromeDriver: chrome on MAC (1fc632cc0ded7fc2c7fa1db418329876)] -> xpath: //*]>}]
+;;  ["header"
+;;   {:webelement
+;;    #<Tag: <div>, Text: Signup and Pricing  Explore GitHub  Features  Blog  Sign in, Id: header, Class: true clearfix, Object: [[ChromeDriver: chrome on MAC (1fc632cc0ded7fc2c7fa1db418329876)] -> xpath: //*]>}])
+```
+
+Pretty simple - you could do that with regular CSS or XPath queries. One could argue, however, that even at this simple point the declarative nature of `run*` is easier to follow and reason about than a series of explicit `find-element`, `filter` or `remove` calls.
+
+More and larger examples forthcoming.
 
 ### Logic Programming Materials ###
 
