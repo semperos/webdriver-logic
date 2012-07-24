@@ -9,7 +9,8 @@ The WebDriver Logic library provides a "mirror" of the [clj-webdriver](https://g
 Here's a simple example where we find a single element with a class of `site-logo`:
 
 ```clj
-(def b (clj-webdriver.core/start :firefox "https://github.com"))
+(def b (clj-webdriver.core/start {:browser :chrome} "https://github.com"))
+
 (run 1 [q]
   (classo b q "site-logo"))
 
