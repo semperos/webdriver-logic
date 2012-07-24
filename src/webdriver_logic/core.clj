@@ -4,6 +4,8 @@
   (:require [clj-webdriver.core :as wd]
             [clj-webdriver.element :as el]))
 
+;; Kudos to http://tsdh.wordpress.com/2012/01/06/using-clojures-core-logic-with-custom-data-structures/
+
 (def
   ^{:dynamic true
     :doc "Limit any calls to `clj-webdriver.core/find-elements` to this domain. Expected to be a Clojure form that can act as that function's second argument."}
