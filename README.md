@@ -34,10 +34,10 @@ Or how about all the footer navigation sections?
 
 How about the first three elements on the page that have a legitimate `id` attribute?
 
-```
+```clj
 (run 3 [q]
   (fresh [an-element a-value]
-    (attributeo b an-element :id a-value)
+    (attributeo driver an-element :id a-value)
     (!= a-value nil)
     (!= a-value "")
     (== q [a-value an-element])))
@@ -54,6 +54,12 @@ How about the first three elements on the page that have a legitimate `id` attri
 ```
 
 Pretty simple - you could do that with regular CSS or XPath queries. One could argue, however, that even at this simple point the declarative nature of `run*` is easier to follow and reason about than a series of explicit `find-element`, `filter` or `remove` calls.
+
+Let's make the inference work harder for us. Which links are included in both the header and footer?
+
+```clj
+
+```
 
 More and larger examples forthcoming.
 
