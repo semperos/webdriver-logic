@@ -91,6 +91,17 @@ You can flash these elements to convince yourself that the above works:
                           (== q [the-href-value header-el footer-el]))))]
   (wd/flash (el/map->Element (nth res 1)))
   (wd/flash (el/map->Element (nth res 2))))
+;=>
+;; (["https://github.com/features"
+;;   {:webelement
+;;    #<Tag: <a>, Text: Features, Href: https://github.com/features, Object: [[ChromeDriver: chrome on MAC (1fc632cc0ded7fc2c7fa1db418329876)] -> xpath: //a]>}
+;;   {:webelement
+;;    #<Tag: <a>, Text: Features, Href: https://github.com/features, Object: [[ChromeDriver: chrome on MAC (1fc632cc0ded7fc2c7fa1db418329876)] -> xpath: //a]>}]
+;;  ["https://github.com/blog"
+;;   {:webelement
+;;    #<Tag: <a>, Text: Blog, Href: https://github.com/blog, Object: [[ChromeDriver: chrome on MAC (1fc632cc0ded7fc2c7fa1db418329876)] -> xpath: //a]>}
+;;   {:webelement
+;;    #<Tag: <a>, Text: Blog, Href: https://github.com/blog, Object: [[ChromeDriver: chrome on MAC (1fc632cc0ded7fc2c7fa1db418329876)] -> xpath: //a]>}])
 ```
 
 Note: What is bound to `q` comes back as simple `clojure.lang.PersistentArrayMap` instances. As a neophyte in the realm of core.logic, I'm not entirely sure why the `Element` records returned by `find-element` are "downgraded" to maps, but the above works.
