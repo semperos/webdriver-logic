@@ -59,7 +59,7 @@ And if we limit the search domain to a sub-set of elements on the page:
 (binding [*search-domain* {:xpath "//div"}]
   (run 3 [q]
        (fresh [an-element a-value]
-              (attributeo b an-element :id a-value)
+              (attributeo driver an-element :id a-value)
               (!= a-value nil)
               (!= a-value "")
               (== q [a-value an-element]))))
@@ -84,12 +84,12 @@ Let's make the inference work harder for us. Are there two links included in bot
           *child-search-domain* {:xpath ".//a"}]
   (run 2 [q]
      (fresh [header-el footer-el the-href-value]
-            (attributeo b header-el :href the-href-value)
-            (attributeo b footer-el :href the-href-value)
+            (attributeo driver header-el :href the-href-value)
+            (attributeo driver footer-el :href the-href-value)
             (!= the-href-value nil)
             (!= the-href-value "")
-            (childo b header-el (wd/find-element b {:id "header"}))
-            (childo b footer-el (wd/find-element b {:id "footer"}))
+            (childo driver header-el (wd/find-element driver {:id "header"}))
+            (childo driver footer-el (wd/find-element driver {:id "footer"}))
             (== q [the-href-value header-el footer-el]))))
 ;=>
 ;; (["https://github.com/features"
@@ -115,12 +115,12 @@ You can `flash` these elements to convince yourself that the above works:
                       *child-search-domain* {:xpath ".//a"}]
               (run 2 [q]
                    (fresh [header-el footer-el the-href-value]
-                          (attributeo b header-el :href the-href-value)
-                          (attributeo b footer-el :href the-href-value)
+                          (attributeo driver header-el :href the-href-value)
+                          (attributeo driver footer-el :href the-href-value)
                           (!= the-href-value nil)
                           (!= the-href-value "")
-                          (childo b header-el (wd/find-element b {:id "header"}))
-                          (childo b footer-el (wd/find-element b {:id "footer"}))
+                          (childo driver header-el (wd/find-element driver {:id "header"}))
+                          (childo driver footer-el (wd/find-element driver {:id "footer"}))
                           (== q [the-href-value header-el footer-el]))))]
   (wd/flash (el/map->Element (nth res 1)))
   (wd/flash (el/map->Element (nth res 2))))
