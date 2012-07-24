@@ -55,13 +55,47 @@ How about the first three elements on the page that have a legitimate `id` attri
 
 Pretty simple - you could do that with regular CSS or XPath queries. One could argue, however, that even at this simple point the declarative nature of `run*` is easier to follow and reason about than a series of explicit `find-element`, `filter` or `remove` calls.
 
-Let's make the inference work harder for us. Which links are included in both the header and footer?
+Let's make the inference work harder for us. Are there two links included in both the header and footer that have the same `href` value?
 
 ```clj
-
+(binding [*search-domain* {:xpath "//a"}
+          *child-search-domain* {:xpath ".//a"}]
+  (run 2 [q]
+     (fresh [header-el footer-el the-href-value]
+            (attributeo b header-el :href the-href-value)
+            (attributeo b footer-el :href the-href-value)
+            (!= the-href-value nil)
+            (!= the-href-value "")
+            (childo b header-el (wd/find-element b {:id "header"}))
+            (childo b footer-el (wd/find-element b {:id "footer"}))
+            (== q [the-href-value header-el footer-el]))))
 ```
 
-More and larger examples forthcoming.
+You'll notice the binding of `*search-domain*` to a subset of all anchor elements on the page. This drastically improves performance as relations like `attributeo` have to traverse all the elements on the page to find an answer. (Note: Performance issues of this kind will be improved once clj-webdriver's caching facilities are improved. Currently clj-webdriver limits caching to calls to `find-element`, which doesn't help with webdriver-logic).
+
+You can flash these elements to convince yourself that the above works:
+
+```clj
+(require '[clj-webdriver.element :as el])
+
+(doseq [res (binding [*search-domain* {:xpath "//a"}
+                      *sub-search-domain* {:xpath ".//a"}]
+              (run 2 [q]
+                   (fresh [header-el footer-el the-href-value]
+                          (attributeo b header-el :href the-href-value)
+                          (attributeo b footer-el :href the-href-value)
+                          (!= the-href-value nil)
+                          (!= the-href-value "")
+                          (childo b header-el (wd/find-element b {:id "header"}))
+                          (childo b footer-el (wd/find-element b {:id "footer"}))
+                          (== q [the-href-value header-el footer-el]))))]
+  (wd/flash (el/map->Element (nth res 1)))
+  (wd/flash (el/map->Element (nth res 2))))
+```
+
+Note: What is bound to `q` comes back as simple `clojure.lang.PersistentArrayMap` instances. As a neophyte in the realm of core.logic, I'm not entirely sure why the `Element` records returned by `find-element` are "downgraded" to maps, but the above works.
+
+Larger and more meaningful examples forthcoming.
 
 ### Logic Programming Materials ###
 
