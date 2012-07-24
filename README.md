@@ -69,6 +69,17 @@ Let's make the inference work harder for us. Are there two links included in bot
             (childo b header-el (wd/find-element b {:id "header"}))
             (childo b footer-el (wd/find-element b {:id "footer"}))
             (== q [the-href-value header-el footer-el]))))
+;=>
+;; (["https://github.com/features"
+;;   {:webelement
+;;    #<Tag: <a>, Text: Features, Href: https://github.com/features, Object: [[ChromeDriver: chrome on MAC (1fc632cc0ded7fc2c7fa1db418329876)] -> xpath: //a]>}
+;;   {:webelement
+;;    #<Tag: <a>, Text: Features, Href: https://github.com/features, Object: [[ChromeDriver: chrome on MAC (1fc632cc0ded7fc2c7fa1db418329876)] -> xpath: //a]>}]
+;;  ["https://github.com/blog"
+;;   {:webelement
+;;    #<Tag: <a>, Text: Blog, Href: https://github.com/blog, Object: [[ChromeDriver: chrome on MAC (1fc632cc0ded7fc2c7fa1db418329876)] -> xpath: //a]>}
+;;   {:webelement
+;;    #<Tag: <a>, Text: Blog, Href: https://github.com/blog, Object: [[ChromeDriver: chrome on MAC (1fc632cc0ded7fc2c7fa1db418329876)] -> xpath: //a]>}])
 ```
 
 You'll notice the binding of `*search-domain*` to a subset of all anchor elements on the page. This drastically improves performance as relations like `attributeo` have to traverse all the elements on the page to find an answer. (Note: Performance issues of this kind will be improved once clj-webdriver's caching facilities are improved. Currently clj-webdriver limits caching to calls to `find-element`, which doesn't help with webdriver-logic).
@@ -91,17 +102,6 @@ You can flash these elements to convince yourself that the above works:
                           (== q [the-href-value header-el footer-el]))))]
   (wd/flash (el/map->Element (nth res 1)))
   (wd/flash (el/map->Element (nth res 2))))
-;=>
-;; (["https://github.com/features"
-;;   {:webelement
-;;    #<Tag: <a>, Text: Features, Href: https://github.com/features, Object: [[ChromeDriver: chrome on MAC (1fc632cc0ded7fc2c7fa1db418329876)] -> xpath: //a]>}
-;;   {:webelement
-;;    #<Tag: <a>, Text: Features, Href: https://github.com/features, Object: [[ChromeDriver: chrome on MAC (1fc632cc0ded7fc2c7fa1db418329876)] -> xpath: //a]>}]
-;;  ["https://github.com/blog"
-;;   {:webelement
-;;    #<Tag: <a>, Text: Blog, Href: https://github.com/blog, Object: [[ChromeDriver: chrome on MAC (1fc632cc0ded7fc2c7fa1db418329876)] -> xpath: //a]>}
-;;   {:webelement
-;;    #<Tag: <a>, Text: Blog, Href: https://github.com/blog, Object: [[ChromeDriver: chrome on MAC (1fc632cc0ded7fc2c7fa1db418329876)] -> xpath: //a]>}])
 ```
 
 Note: What is bound to `q` comes back as simple `clojure.lang.PersistentArrayMap` instances. As a neophyte in the realm of core.logic, I'm not entirely sure why the `Element` records returned by `find-element` are "downgraded" to maps, but the above works.
