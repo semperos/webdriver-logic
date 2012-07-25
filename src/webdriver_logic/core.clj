@@ -50,3 +50,13 @@
                        [% parent-elem])
                (wd/find-elements parent-elem *child-search-domain*))
           (remove not)))))
+
+(comment
+
+  (def b (wd/start {:browser :chrome
+                    :cache-spec {:strategy :basic
+                                 :args [{}]
+                                 :include [ {:xpath "//a"} ]}}
+                   "https://github.com"))
+
+  )
