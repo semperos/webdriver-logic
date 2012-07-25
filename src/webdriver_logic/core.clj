@@ -16,6 +16,18 @@
     :doc "Limit any calls to `clj-webdriver.core/find-elements` **for which the first argument is an Element record** to this domain. This signature searches for elements that are children of this first parameter, hence the name `child-search-domain`. This value should be a Clojure form that can act as the function's second argument."}
   *child-search-domain* {:xpath ".//*"})
 
+(defn fresh?
+  "Returns true, if `x' is fresh.
+  `x' must have been `walk'ed before!"
+  [x]
+  (lvar? x))
+
+(defn ground?
+  "Returns true, if `x' is ground.
+  `x' must have been `walk'ed before!"
+  [x]
+  (not (lvar? x)))
+
 (defn attributeo
   "A relation where `elem` has value `value` for its `attr` attribute"
   [driver elem attr value]
@@ -33,8 +45,8 @@
   [driver child-elem parent-elem]
   (fn [a]
     (to-stream
-     (->> (for [child-el (wd/find-elements parent-elem *sub-search-domain*)]
-            (unify a
-                   [child-elem parent-elem]
-                   [child-el parent-elem]))
+     (->> (map #(unify a
+                       [child-elem parent-elem]
+                       [% parent-elem])
+               (wd/find-elements parent-elem *child-search-domain*))
           (remove not)))))
