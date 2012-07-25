@@ -10,9 +10,10 @@ Here's a simple example where we find the first element with a class of `site-lo
 
 ```clj
 (def driver (clj-webdriver.core/start {:browser :chrome} "https://github.com"))
+(set-driver! driver)
 
 (run 1 [q]
-  (attributeo driver q :class "site-logo"))
+  (attributeo q :class "site-logo"))
 ;=> ({:webelement #<Tag: <a>, Class: site-logo, Href: https://github.com/, Object: [[ChromeDriver: chrome on MAC (6140efaa871769f2b7baa8fa885ebabc)] -> xpath: //*]>})
 ```
 
@@ -20,7 +21,7 @@ Or how about all the footer navigation sections?
 
 ```clj
 (run* [q]
-  (attributeo driver q :class "footer_nav"))
+  (attributeo q :class "footer_nav"))
 ;=>
 ;; ({:webelement
 ;;   #<Tag: <ul>, Text: GitHub  About  Blog  Features  Contact & Support  Training  ..., Class: footer_nav, Object: [[ChromeDriver: chrome on MAC (6140efaa871769f2b7baa8fa885ebabc)] -> xpath: //*]>}
@@ -37,7 +38,7 @@ How about the first three elements on the page that have a legitimate `id` attri
 ```clj
 (run 3 [q]
   (fresh [an-element a-value]
-    (attributeo driver an-element :id a-value)
+    (attributeo an-element :id a-value)
     (!= a-value nil)
     (!= a-value "")
     (== q [a-value an-element])))
@@ -59,7 +60,7 @@ And if we limit the search domain to a sub-set of elements on the page:
 (binding [*search-domain* {:xpath "//div"}]
   (run 3 [q]
        (fresh [an-element a-value]
-              (attributeo driver an-element :id a-value)
+              (attributeo an-element :id a-value)
               (!= a-value nil)
               (!= a-value "")
               (== q [a-value an-element]))))
@@ -84,12 +85,12 @@ Let's make the inference work harder for us. Are there two links included in bot
           *child-search-domain* {:xpath ".//a"}]
   (run 2 [q]
      (fresh [header-el footer-el the-href-value]
-            (attributeo driver header-el :href the-href-value)
-            (attributeo driver footer-el :href the-href-value)
+            (attributeo header-el :href the-href-value)
+            (attributeo footer-el :href the-href-value)
             (!= the-href-value nil)
             (!= the-href-value "")
-            (childo driver header-el (wd/find-element driver {:id "header"}))
-            (childo driver footer-el (wd/find-element driver {:id "footer"}))
+            (childo header-el (wd/find-element driver {:id "header"}))
+            (childo footer-el (wd/find-element driver {:id "footer"}))
             (== q [the-href-value header-el footer-el]))))
 ;=>
 ;; (["https://github.com/features"
@@ -115,12 +116,12 @@ You can `flash` these elements to convince yourself that the above works:
                           *child-search-domain* {:xpath ".//a"}]
                   (run 2 [q]
                     (fresh [header-el footer-el the-href-value]
-                      (attributeo driver header-el :href the-href-value)
-                      (attributeo driver footer-el :href the-href-value)
+                      (attributeo header-el :href the-href-value)
+                      (attributeo footer-el :href the-href-value)
                       (!= the-href-value nil)
                       (!= the-href-value "")
-                      (childo driver header-el (wd/find-element driver {:id "header"}))
-                      (childo driver footer-el (wd/find-element driver {:id "footer"}))
+                      (childo header-el (wd/find-element driver {:id "header"}))
+                      (childo footer-el (wd/find-element driver {:id "footer"}))
                       (== q [the-href-value header-el footer-el]))))]
   (wd/flash h)
   (wd/flash f))
