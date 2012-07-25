@@ -111,22 +111,20 @@ You can `flash` these elements to convince yourself that the above works:
 ```clj
 (require '[clj-webdriver.element :as el])
 
-(doseq [res (binding [*search-domain* {:xpath "//a"}
-                      *child-search-domain* {:xpath ".//a"}]
-              (run 2 [q]
-                   (fresh [header-el footer-el the-href-value]
-                          (attributeo driver header-el :href the-href-value)
-                          (attributeo driver footer-el :href the-href-value)
-                          (!= the-href-value nil)
-                          (!= the-href-value "")
-                          (childo driver header-el (wd/find-element driver {:id "header"}))
-                          (childo driver footer-el (wd/find-element driver {:id "footer"}))
-                          (== q [the-href-value header-el footer-el]))))]
-  (wd/flash (el/map->Element (nth res 1)))
-  (wd/flash (el/map->Element (nth res 2))))
+(doseq [[_ h f] (binding [*search-domain* {:xpath "//a"}
+                          *child-search-domain* {:xpath ".//a"}]
+                  (run 2 [q]
+                    (fresh [header-el footer-el the-href-value]
+                      (attributeo driver header-el :href the-href-value)
+                      (attributeo driver footer-el :href the-href-value)
+                      (!= the-href-value nil)
+                      (!= the-href-value "")
+                      (childo driver header-el (wd/find-element driver {:id "header"}))
+                      (childo driver footer-el (wd/find-element driver {:id "footer"}))
+                      (== q [the-href-value header-el footer-el]))))]
+  (wd/flash h)
+  (wd/flash f))
 ```
-
-Note: What is bound to `q` comes back as simple `clojure.lang.PersistentArrayMap` instances. As a neophyte in the realm of core.logic, I'm not entirely sure why the `Element` records returned by `find-element` are "downgraded" to maps, but the above works.
 
 Larger and more meaningful examples forthcoming.
 
