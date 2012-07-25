@@ -28,6 +28,7 @@
   [x]
   (not (lvar? x)))
 
+;; TODO: You can't put q everywhere, `attr` is assumed grounded
 (defn attributeo
   "A relation where `elem` has value `value` for its `attr` attribute"
   [driver elem attr value]
@@ -40,6 +41,7 @@
                    [el attribute (wd/attribute el attribute)]))
           (remove not)))))
 
+;; TODO: You can't put q everywhere, `parent-elem` is assumed grounded
 (defn childo
   "A relation where `child-elem` is a child element of the `parent-elem` element on the current page."
   [driver child-elem parent-elem]
