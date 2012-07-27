@@ -83,12 +83,11 @@
   [elem attr value]
   (fn [a]
     (to-stream
-     (->> (for [el (wd/find-elements *driver* *search-domain*)
-                attribute *html-attributes*]
-            (unify a
-                   [elem attr value]
-                   [el attribute (wd/attribute el attribute)]))
-          (remove not)))))
+     (for [el (wd/find-elements *driver* *search-domain*)
+           attribute *html-attributes*]
+       (unify a
+              [elem attr value]
+              [el attribute (wd/attribute el attribute)])))))
 
 ;; Time: 35 ms
 (defn raw-attributeo
@@ -97,12 +96,11 @@
   (let [tree (get-source *driver*)]
     (fn [a]
       (to-stream
-       (->> (for [el (h/select tree *raw-search-domain*)
-                  attribute *html-attributes*]
-              (unify a
-                     [elem attr value]
-                     [el attribute (get-in el [:attrs attribute])]))
-            (remove not))))))
+       (for [el (h/select tree *raw-search-domain*)
+             attribute *html-attributes*]
+         (unify a
+                [elem attr value]
+                [el attribute (get-in el [:attrs attribute])]))))))
 
 ;; TODO: You can't put q everywhere, `parent-elem` is assumed grounded
 ;; Time: 13 ms
@@ -111,11 +109,10 @@
   [child-elem parent-elem]
   (fn [a]
     (to-stream
-     (->> (map #(unify a
-                       [child-elem parent-elem]
-                       [% parent-elem])
-               (wd/find-elements parent-elem *child-search-domain*))
-          (remove not)))))
+     (map #(unify a
+                  [child-elem parent-elem]
+                  [% parent-elem])
+          (wd/find-elements parent-elem *child-search-domain*)))))
 
 ;; Time: 1.3 ms
 (defn raw-childo
@@ -124,11 +121,10 @@
   (let [tree (get-source *driver*)]
     (fn [a]
       (to-stream
-       (->> (map #(unify a
-                         [child-elem parent-elem]
-                         [% parent-elem])
-                 (h/select tree (concat parent-elem *raw-child-search-domain*)))
-            (remove not))))))
+       (map #(unify a
+                    [child-elem parent-elem]
+                    [% parent-elem])
+            (h/select tree (concat parent-elem *raw-child-search-domain*)))))))
 
 (comment
 
