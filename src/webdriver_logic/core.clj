@@ -48,10 +48,43 @@
     :doc "Limit Enlive's querying for *children* to the following."}
   *raw-child-search-domain* [:*])
 
+;; See http://www.w3.org/2002/08/xhtml/xhtml1-transitional.xsd for tags and attributes
+
 (def
   ^{:dynamic true
-    :doc "Set of 'legal' HTML attributes that should be part of the search space. Intentionally small by default, to make the search space smaller."}
-  *html-attributes* #{:alt :class :for :href :id :name :src :value})
+    :doc "List of legal HTML tag names that should be part of the search space."}
+  *html-tags* #{"a" "abbr" "acronym" "address" "applet" "area" "b" "base" "basefont"
+                "bdo" "big" "blockquote" "body" "br" "button" "caption" "center"
+                "cite" "code" "col" "colgroup" "dd" "del" "dfn" "dir" "div" "dl" "dt"
+                "em" "fieldset" "font" "form" "h1" "h2" "h3" "h4" "h5" "h6" "head"
+                "hr" "i" "iframe" "img" "input" "ins" "isindex" "kbd" "label"
+                "legend" "li" "link" "map" "menu" "meta" "noframes" "noscript"
+                "object" "ol" "optgroup" "option" "p" "param" "pre" "q" "s" "samp"
+                "script" "select" "small" "span" "strike" "strong" "style" "sub"
+                "sup" "table" "tbody" "td" "textarea" "tfoot" "th" "thead" "title"
+                "tr" "tt" "u" "ul" "var"})
+(def
+  ^{:dynamic true
+    :doc "Set of legal HTML attributes that should be part of the search space."}
+  *html-attributes* #{"abbr" "accept" "accept-charset" "accesskey" "action" "align"
+                      "alink" "alt" "archive" "axis" "background" "bgcolor" "border"
+                      "cellpadding" "cellspacing" "char" "charoff" "charset"
+                      "checked" "cite" "class" "classid" "clear" "code" "codebase"
+                      "codetype" "color" "cols" "colspan" "compact" "content"
+                      "coords" "data" "datetime" "declare" "defer" "dir" "disabled"
+                      "enctype" "face" "for" "frame" "frameborder" "headers" "height"
+                      "href" "hreflang" "hspace" "http-equiv" "id" "ismap" "label"
+                      "lang" "language" "link" "longdesc" "marginheight"
+                      "marginwidth" "maxlength" "media" "method" "multiple" "name"
+                      "nohref" "noshade" "nowrap" "object" "onblur" "onchange"
+                      "onclick" "ondblclick" "onfocus" "onkeydown" "onkeypress"
+                      "onkeyup" "onload" "onmousedown" "onmousemove" "onmouseout"
+                      "onmouseover" "onmouseup" "onreset" "onselect" "onsubmit"
+                      "onunload" "profile" "prompt" "readonly" "rel" "rev" "rows"
+                      "rowspan" "rules" "scheme" "scope" "scrolling" "selected"
+                      "shape" "size" "span" "src" "standby" "start" "style" "summary"
+                      "tabindex" "target" "text" "title" "type" "usemap" "valign"
+                      "value" "valuetype" "vlink" "vspace" "width"})
 
 ;; TODO: Consider lvaro nonlvaro
 (defn fresh?
@@ -75,6 +108,28 @@
       (wd-cache/insert driver :page-source src)
       src)))
 
+(defn all-elements
+  "Shortcut for using WebDriver to get all elements"
+  []
+  (wd/find-elements *driver* *search-domain*))
+
+(defn all-raw-elements
+  "Shortcut for using Enlive to read source and return all elements"
+  []
+  (let [tree (get-source *driver*)]
+    (h/select tree *raw-search-domain*)))
+
+(defn all-child-elements
+  "Shortcut for using WebDriver to get all elements beneath an element"
+  [parent-elem]
+  (wd/find-elements parent-elem *child-search-domain*))
+
+(defn all-raw-child-elements
+  "Shortcut for using Enlive to get all elements beneath an element"
+  [parent-elem]
+  (let [tree (get-source *driver*)]
+    (h/select tree (concat parent-elem *raw-child-search-domain*))))
+
 ;; ### Relations ###
 
 ;; Time: 5 *s*
@@ -83,7 +138,7 @@
   [elem attr value]
   (fn [a]
     (to-stream
-     (for [el (wd/find-elements *driver* *search-domain*)
+     (for [el (all-elements)
            attribute *html-attributes*]
        (unify a
               [elem attr value]
@@ -93,14 +148,60 @@
 (defn raw-attributeo
   "Same as `attributeo`, but use the source of the page with Enlive"
   [elem attr value]
-  (let [tree (get-source *driver*)]
-    (fn [a]
-      (to-stream
-       (for [el (h/select tree *raw-search-domain*)
-             attribute *html-attributes*]
-         (unify a
-                [elem attr value]
-                [el attribute (get-in el [:attrs attribute])]))))))
+  (fn [a]
+    (to-stream
+     (for [el (all-raw-elements *raw-search-domain*)
+           attribute *html-attributes*]
+       (unify a
+              [elem attr value]
+              [el attribute (get-in el [:attrs attribute])])))))
+
+(defn displayedo [])
+(defn enabledo [])
+(defn existso [])
+(defn intersecto [])
+(defn presento [])
+(defn selected [])
+(defn sizeo [])
+
+(defn tago
+  "This `elem` has this `tag` name"
+  [elem tag]
+  (fn [a]
+    (let [gelem (walk a elem)
+          gtag (walk a tag)]
+      (cond
+        (ground? gelem) (unify a
+                               [elem tag]
+                               [gelem (wd/tag gelem)])
+        (ground? gtag)  (to-stream
+                         (for [el (all-elements)]
+                           (unify a
+                                  [elem tag]
+                                  [el (wd/tag el)])))
+        :default        (to-stream
+                         (for [el (all-elements)
+                               a-tag *html-tags*]
+                           (unify a
+                                  [elem tag]
+                                  [el (wd/tag el)])))))))
+
+(defn texto [])
+(defn valueo [])
+(defn visibleo
+  "Visible elements"
+  [elem]
+  (fn [a]
+    (let [gelem (walk a elem)]
+      (if (fresh? gelem)
+        (to-stream
+         (for [el (all-elements)]
+           (if (wd/visible? el)
+             a
+             (fail a))))
+        (if (wd/visible? gelem)
+          a
+          (fail a))))))
 
 ;; TODO: You can't put q everywhere, `parent-elem` is assumed grounded
 ;; Time: 13 ms
@@ -112,27 +213,26 @@
      (map #(unify a
                   [child-elem parent-elem]
                   [% parent-elem])
-          (wd/find-elements parent-elem *child-search-domain*)))))
+          (all-child-elements parent-elem)))))
 
 ;; Time: 1.3 ms
 (defn raw-childo
   "Same as `childo`, but use the source of the page with Enlive"
   [child-elem parent-elem]
-  (let [tree (get-source *driver*)]
-    (fn [a]
-      (to-stream
-       (map #(unify a
-                    [child-elem parent-elem]
-                    [% parent-elem])
-            (h/select tree (concat parent-elem *raw-child-search-domain*)))))))
+  (fn [a]
+    (to-stream
+     (map #(unify a
+                  [child-elem parent-elem]
+                  [% parent-elem])
+          (all-raw-child-elements parent-elem)))))
 
 (comment
 
-  (def b (wd/start {:browser :firefox
+  (set-driver! {:browser :firefox
                     :cache-spec {:strategy :basic
                                  :args [{}]
                                  :include [ {:xpath "//a"} ]}
                     }
-                   "https://github.com"))
+               "https://github.com")
 
   )
