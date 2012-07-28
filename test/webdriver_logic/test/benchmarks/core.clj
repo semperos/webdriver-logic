@@ -32,8 +32,32 @@
 )
 
 ;; ### Individual Functions ###
-;;
-;; TODO
+
+(comment
+"
+    Evaluation count             : 240
+             Execution time mean : 285.431004 ms  95.0% CI: (285.245250 ms, 285.684354 ms)
+    Execution time std-deviation : 27.940544 ms  95.0% CI: (27.790336 ms, 28.050204 ms)
+         Execution time lower ci : 239.179000 ms  95.0% CI: (239.179000 ms, 239.179000 ms)
+         Execution time upper ci : 332.341750 ms  95.0% CI: (332.341750 ms, 332.405100 ms)
+")
+(defn bench-tago
+  []
+  (run 2 [q]
+       (tago q :a)))
+
+(comment
+"
+    Evaluation count             : 12420
+             Execution time mean : 4.838575 ms  95.0% CI: (4.838211 ms, 4.838844 ms)
+    Execution time std-deviation : 45.045486 us  95.0% CI: (44.396467 us, 45.573489 us)
+         Execution time lower ci : 4.789816 ms  95.0% CI: (4.789816 ms, 4.789816 ms)
+         Execution time upper ci : 4.894847 ms  95.0% CI: (4.894440 ms, 4.896366 ms)
+")
+(defn bench-tago-RAW
+  []
+  (run 2 [q]
+       (raw-tago q :a)))
 
 ;; ### Multiple Functions ###
 
