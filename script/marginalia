@@ -1,0 +1,3 @@
+#!/bin/bash
+
+lein marg src/webdriver_logic/ test/webdriver_logic/test/benchmarks/
