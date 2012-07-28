@@ -7,3 +7,4 @@ pom.xml
 chromedriver.log
 checkouts/
 target/
+docs/
