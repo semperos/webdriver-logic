@@ -41,7 +41,7 @@
 (def
   ^{:dynamic true
     :doc "Limit Enlive's querying to the following."}
-  *raw-search-domain* [:body :*])
+  *raw-search-domain* [:*])
 
 (def
   ^{:dynamic true
@@ -131,8 +131,9 @@
     (h/select tree (concat parent-elem *raw-child-search-domain*))))
 
 ;; ### Relations ###
+;;
+;; See the webdriver-logic.test.benchmarks namespaces for performance details
 
-;; Time: 769 ms
 (defn attributeo
   "A relation where `elem` has value `value` for its `attr` attribute"
   [elem attr value]
@@ -192,15 +193,118 @@
                            [elem attr value]
                            [element attribute (get-in element [:attrs attribute])])))))))
 
-(defn displayedo [])
-(defn enabledo [])
-(defn existso [])
-(defn intersecto [])
-(defn presento [])
-(defn selected [])
-(defn sizeo [])
+(defn displayedo
+  [elem]
+  (fn [a]
+    (let [gelem (walk a elem)]
+      (if (fresh? gelem)
+        (to-stream
+         (for [el (all-elements)]
+           (if (wd/displayed? el)
+             (unify a
+                    elem
+                    el)
+             (fail a))))
+        (if (wd/displayed? gelem)
+          (unify a
+                 elem
+                 gelem)
+          (fail a))))))
 
-;; Time: 200.7 ms
+(defn enabledo
+  [elem]
+  (fn [a]
+    (let [gelem (walk a elem)]
+      (if (fresh? gelem)
+        (to-stream
+         (for [el (all-elements)]
+           (if (wd/enabled? el)
+             (unify a
+                    elem
+                    el)
+             (fail a))))
+        (if (wd/enabled? gelem)
+          (unify a
+                 elem
+                 gelem)
+          (fail a))))))
+
+(defn existso
+  [elem]
+  (fn [a]
+    (let [gelem (walk a elem)]
+      (if (fresh? gelem)
+        (to-stream
+         (for [el (all-elements)]
+           (if (wd/exists? el)
+             (unify a
+                    elem
+                    el)
+             (fail a))))
+        (if (wd/exists? gelem)
+          (unify a
+                 elem
+                 gelem)
+          (fail a))))))
+
+(defn intersecto [])
+
+(defn presento
+  [elem]
+  (fn [a]
+    (let [gelem (walk a elem)]
+      (if (fresh? gelem)
+        (to-stream
+         (for [el (all-elements)]
+           (if (wd/present? el)
+             (unify a
+                    elem
+                    el)
+             (fail a))))
+        (if (wd/present? gelem)
+          (unify a
+                 elem
+                 gelem)
+          (fail a))))))
+
+(defn selected
+  [elem]
+  (fn [a]
+    (let [gelem (walk a elem)]
+      (if (fresh? gelem)
+        (to-stream
+         (for [el (all-elements)]
+           (if (wd/selected? el)
+             (unify a
+                    elem
+                    el)
+             (fail a))))
+        (if (wd/selected? gelem)
+          (unify a
+                 elem
+                 gelem)
+          (fail a))))))
+
+(defn sizeo
+  [elem size]
+  (fn [a]
+    (let [gelem (walk a elem)
+          gsize (walk a size)]
+      (cond
+        (ground? gelem) (unify a
+                               [elem size]
+                               [gelem (wd/size gelem)])
+        (ground? gsize)  (to-stream
+                          (for [el (all-elements)]
+                            (unify a
+                                   [elem size]
+                                   [el (wd/size el)])))
+        :default        (to-stream
+                         (for [el (all-elements)]
+                           (unify a
+                                  [elem size]
+                                  [el (wd/size el)])))))))
+
 (defn tago
   "This `elem` has this `tag` name"
   [elem tag]
@@ -217,8 +321,7 @@
                                   [elem tag]
                                   [el (wd/tag el)])))
         :default        (to-stream
-                         (for [el (all-elements)
-                               a-tag *html-tags*]
+                         (for [el (all-elements)]
                            (unify a
                                   [elem tag]
                                   [el (wd/tag el)])))))))
@@ -233,19 +336,51 @@
                                [elem tag]
                                [gelem (:tag gelem)])
         (ground? gtag)  (to-stream
-                         (for [el (all-elements)]
+                         (for [el (all-raw-elements)]
                            (unify a
                                   [elem tag]
                                   [el (:tag el)])))
         :default        (to-stream
-                         (for [el (all-elements)
-                               a-tag *html-tags*]
+                         (for [el (all-raw-elements)]
                            (unify a
                                   [elem tag]
                                   [el (:tag el)])))))))
 
-(defn texto [])
-(defn valueo [])
+(defn texto
+  [elem text]
+  (fn [a]
+    (let [gelem (walk a elem)
+          gtext (walk a text)]
+      (cond
+        (ground? gelem) (unify a
+                               [elem text]
+                               [gelem (wd/text gelem)])
+        (ground? gtext)  (to-stream
+                         (for [el (all-elements)]
+                           (unify a
+                                  [elem text]
+                                  [el (wd/text el)])))
+        :default        (to-stream
+                         (for [el (all-elements)
+                               a-text (map wd/text (all-elements))]
+                           (unify a
+                                  [elem text]
+                                  [el (wd/text el)])))))))
+
+;; I feel as though this is feasible, needs consideration how to manipulate
+;; the tree that Enlive produces.
+;; (defn raw-texto)
+
+(defn valueo
+  "Shortcut for attributeo with `value` attribute"
+  [elem value]
+  (attributeo elem "value" value))
+
+(defn raw-valueo
+  "Shortcut for raw-attributeo with `value` attribute"
+  [elem value]
+  (raw-attributeo elem :value value))
+
 (defn visibleo
   "Visible elements"
   [elem]
@@ -292,5 +427,9 @@
                                  :include [ {:xpath "//a"} ]}
                     }
                "https://github.com")
+
+  (do
+    (wd/click (wd/find-element *driver* {:css "a[href*='login']"}))
+    (wd/input-text (wd/find-element *driver* {:css "input#login_field"}) "semperos"))
 
   )
