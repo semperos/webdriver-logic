@@ -132,29 +132,65 @@
 
 ;; ### Relations ###
 
-;; Time: 5 *s*
+;; Time: 769 ms
 (defn attributeo
   "A relation where `elem` has value `value` for its `attr` attribute"
   [elem attr value]
   (fn [a]
-    (to-stream
-     (for [el (all-elements)
-           attribute *html-attributes*]
-       (unify a
-              [elem attr value]
-              [el attribute (wd/attribute el attribute)])))))
+    (let [gelem (walk a elem)
+          gattr (walk a attr)
+          gvalue (walk a value)]
+      (cond
+        (and (ground? gelem)
+             (ground? gattr)) (unify a
+                                     [elem attr value]
+                                     [gelem gattr (wd/attribute gelem gattr)])
+        (ground? gelem) (to-stream
+                         (for [attribute *html-attributes*]
+                           (unify a
+                                  [elem attr value]
+                                  [gelem attribute (wd/attribute gelem attribute)])))
+        (ground? gattr) (to-stream
+                         (for [element (all-elements)]
+                           (unify a
+                                  [elem attr value]
+                                  [element gattr (wd/attribute element gattr)])))
+        :default (to-stream
+                  (for [element (all-elements)
+                        attribute *html-attributes*]
+                    (unify a
+                           [elem attr value]
+                           [element attribute (wd/attribute element attribute)])))))))
 
-;; Time: 35 ms
+;; Time: 8 ms
 (defn raw-attributeo
   "Same as `attributeo`, but use the source of the page with Enlive"
   [elem attr value]
   (fn [a]
-    (to-stream
-     (for [el (all-raw-elements *raw-search-domain*)
-           attribute *html-attributes*]
-       (unify a
-              [elem attr value]
-              [el attribute (get-in el [:attrs attribute])])))))
+    (let [gelem (walk a elem)
+          gattr (walk a attr)
+          gvalue (walk a value)]
+      (cond
+        (and (ground? gelem)
+             (ground? gattr)) (unify a
+                                     [elem attr value]
+                                     [gelem gattr (get-in gelem [:attrs gattr])])
+        (ground? gelem) (to-stream
+                         (for [attribute *html-attributes*]
+                           (unify a
+                                  [elem attr value]
+                                  [gelem attribute (get-in gelem [:attrs attribute])])))
+        (ground? gattr) (to-stream
+                         (for [element (all-raw-elements)]
+                           (unify a
+                                  [elem attr value]
+                                  [element gattr (get-in element [:attrs gattr])])))
+        :default (to-stream
+                  (for [element (all-raw-elements)
+                        attribute *html-attributes*]
+                    (unify a
+                           [elem attr value]
+                           [element attribute (get-in element [:attrs attribute])])))))))
 
 (defn displayedo [])
 (defn enabledo [])
@@ -164,6 +200,7 @@
 (defn selected [])
 (defn sizeo [])
 
+;; Time: 200.7 ms
 (defn tago
   "This `elem` has this `tag` name"
   [elem tag]
@@ -185,6 +222,27 @@
                            (unify a
                                   [elem tag]
                                   [el (wd/tag el)])))))))
+
+(defn raw-tago
+  [elem tag]
+  (fn [a]
+    (let [gelem (walk a elem)
+          gtag (walk a tag)]
+      (cond
+        (ground? gelem) (unify a
+                               [elem tag]
+                               [gelem (:tag gelem)])
+        (ground? gtag)  (to-stream
+                         (for [el (all-elements)]
+                           (unify a
+                                  [elem tag]
+                                  [el (:tag el)])))
+        :default        (to-stream
+                         (for [el (all-elements)
+                               a-tag *html-tags*]
+                           (unify a
+                                  [elem tag]
+                                  [el (:tag el)])))))))
 
 (defn texto [])
 (defn valueo [])
