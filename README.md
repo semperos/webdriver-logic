@@ -54,7 +54,7 @@ How about the first three elements on the page that have a legitimate `id` attri
 ;;    #<Tag: <div>, Text: Signup and Pricing  Explore GitHub  Features  Blog  Sign in, Id: header, Class: true clearfix, Object: [[ChromeDriver: chrome on MAC (1fc632cc0ded7fc2c7fa1db418329876)] -> xpath: //*]>}])
 ```
 
-And if we limit the search domain to a sub-set of elements on the page:
+And if we limit the search domain to a sub-set of elements on the page (in this case, only `div` elements):
 
 ```clj
 (binding [*search-domain* {:xpath "//div"}]
@@ -105,7 +105,7 @@ Let's make the inference work harder for us. Are there two links included in bot
 ;;    #<Tag: <a>, Text: Blog, Href: https://github.com/blog, Object: [[ChromeDriver: chrome on MAC (1fc632cc0ded7fc2c7fa1db418329876)] -> xpath: //a]>}])
 ```
 
-You'll notice again the binding of `*search-domain*` and `*child-search-domain*` to a subset of all anchor elements on the page. Though this is not necessary for the program to run, it drastically improves performance. Relations like `attributeo` have to traverse all the elements on the page to find an answer, which for Selenium-WebDriver means creating lots of objects. (Note: Performance issues of this kind will be improved once clj-webdriver's caching facilities are improved. Currently clj-webdriver limits caching to calls to `find-element`, which doesn't help with webdriver-logic).
+You'll notice again the binding of `*search-domain*` and `*child-search-domain*` to a subset of all anchor elements on the page. Though this is not necessary for the program to run, it drastically improves performance. Relations like `attributeo` have to traverse all the elements on the page to find an answer, which for Selenium-WebDriver means creating lots of objects.
 
 You can `flash` these elements to convince yourself that the above works:
 
