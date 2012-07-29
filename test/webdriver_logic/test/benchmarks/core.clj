@@ -2,7 +2,8 @@
   (:refer-clojure :exclude [==])
   (:use webdriver-logic.core
         clojure.core.logic
-        criterium.core))
+        criterium.core)
+  (:require [webdriver-logic.raw :as raw]))
 
 (def ^:dynamic *default-url* "https://github.com")
 
@@ -17,7 +18,7 @@
 
 (defn quit-browser
   []
-  (clj-webdriver.core/quit webdriver-logic.core/*driver*))
+  (clj-webdriver.core/quit webdriver-logic.state/*driver*))
 
 ;; ## Benchmarks ##
 ;;
@@ -57,7 +58,7 @@
 (defn bench-tago-RAW
   []
   (run 2 [q]
-       (raw-tago q :a)))
+       (raw/tago q :a)))
 
 ;; ### Multiple Functions ###
 
@@ -89,8 +90,8 @@
   []
   (run 2 [q]
        (fresh [el tag]
-              (raw-attributeo el :href "https://github.com/blog")
-              (raw-tago el tag)
+              (raw/attributeo el :href "https://github.com/blog")
+              (raw/tago el tag)
               (== q [el tag]))))
 
 (defn run-benchy

@@ -1,10 +1,15 @@
 (ns webdriver-logic.core
   (:refer-clojure :exclude [==])
   (:use clojure.core.logic
-        [webdriver-logic.state :only [set-driver! *driver*
-                                      *html-tags* *html-attributes*]]
+        [webdriver-logic.state :only [*driver* *html-tags* *html-attributes*]]
         [webdriver-logic.util :only [fresh? ground?]])
-  (:require [clj-webdriver.core :as wd]))
+  (:require [clj-webdriver.core :as wd]
+            [webdriver-logic.state :as st]))
+
+;; Redefined here for API convenience
+(defn set-driver!
+  ([browser-spec] (st/set-driver! browser-spec))
+  ([browser-spec url] (st/set-driver! browser-spec url)))
 
 ;; Kudos to http://tsdh.wordpress.com/2012/01/06/using-clojures-core-logic-with-custom-data-structures/
 
