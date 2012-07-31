@@ -31,7 +31,7 @@
      (t/is (not (seq goal-values#)))))
 
 (defmacro s-as
-  "Assert that the run is successful and returns a sequence of values equivalent to `coll`."
+  "Assert that the run is successful and returns a sequence of values equivalent to `coll`. If only a single value is expected, `coll` may be this standalone value."
   [coll run-body]
   `(let [goal-values# ~run-body
          a-coll# (if (coll? ~coll)
