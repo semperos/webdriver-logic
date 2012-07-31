@@ -6,7 +6,8 @@
   (:require [clojure.test :as t]
             [clj-webdriver.core :as wd]
             [webdriver-logic.state :as st])
-  (:import [org.openqa.selenium InvalidElementStateException]))
+  (:import [org.openqa.selenium InvalidElementStateException]
+           [org.openqa.selenium.remote ErrorHandler$UnknownServerException]))
 
 (defmacro s
   "Deterministic test. Deterministic predicates are predicates that must succeed exactly once and, for well behaved predicates, leave no choicepoints.
@@ -47,8 +48,7 @@
                    ~coll
                    '(~coll))]
      (t/is (not (some nil?
-                    (for [item# a-coll#]
-                      (some #{item#} goal-values#)))))))
+                      (map #(some #{%} goal-values#) a-coll#))))))
 
 ;; Redefined here for API convenience
 (defn set-driver!
@@ -94,21 +94,24 @@
                                      [elem attr value]
                                      [gelem gattr (try
                                                     (wd/attribute gelem gattr)
-                                                    (catch InvalidElementStateException e nil))])
+                                                    (catch InvalidElementStateException _ nil)
+                                                    (catch ErrorHandler$UnknownServerException _ nil))])
         (ground? gelem) (to-stream
                          (for [attribute *html-attributes*]
                            (unify a
                                   [elem attr value]
                                   [gelem attribute (try
                                                      (wd/attribute gelem attribute)
-                                                     (catch InvalidElementStateException e nil))])))
+                                                     (catch InvalidElementStateException e nil)
+                                                     (catch ErrorHandler$UnknownServerException _ nil))])))
         (ground? gattr) (to-stream
                          (for [element (all-elements)]
                            (unify a
                                   [elem attr value]
                                   [element gattr (try
                                                    (wd/attribute element gattr)
-                                                   (catch InvalidElementStateException e nil))])))
+                                                   (catch InvalidElementStateException e nil)
+                                                   (catch ErrorHandler$UnknownServerException _ nil))])))
         :default (to-stream
                   (for [element (all-elements)
                         attribute *html-attributes*]
@@ -116,7 +119,8 @@
                            [elem attr value]
                            [element attribute (try
                                                 (wd/attribute element attribute)
-                                                (catch InvalidElementStateException e nil))])))))))
+                                                (catch InvalidElementStateException e nil)
+                                                (catch ErrorHandler$UnknownServerException _ nil))])))))))
 
 ;; TODO: You can't put q everywhere, `parent-elem` is assumed grounded
 (defn childo
@@ -305,12 +309,14 @@
 
 (comment
 
-  (set-driver! {:browser :firefox
+  (def b (wd/start {:browser :firefox
                     :cache-spec {:strategy :basic
                                  :args [{}]
                                  :include [ {:xpath "//a"} ]}
                     }
-               "https://github.com")
+                   ;;"https://github.com"
+                   "http://localhost:5744"))
+  (set-driver! b)
 
   (do
     (wd/click (wd/find-element *driver* {:css "a[href*='login']"}))
