@@ -3,8 +3,52 @@
   (:use clojure.core.logic
         [webdriver-logic.state :only [*driver* *html-tags* *html-attributes*]]
         [webdriver-logic.util :only [fresh? ground?]])
-  (:require [clj-webdriver.core :as wd]
-            [webdriver-logic.state :as st]))
+  (:require [clojure.test :as t]
+            [clj-webdriver.core :as wd]
+            [webdriver-logic.state :as st])
+  (:import [org.openqa.selenium InvalidElementStateException]))
+
+(defmacro s
+  "Deterministic test. Deterministic predicates are predicates that must succeed exactly once and, for well behaved predicates, leave no choicepoints.
+
+   This form is not concerned with the actual value returned, just that the run was successful and returned only one value."
+  [run-body]
+  `(let [goal-values# ~run-body]
+     (t/is (= (count goal-values#) 1))))
+
+(defmacro s+
+  "Assert that a run returns more than one value (non-deterministic).
+
+   This form is not concerned with the actual values returned, just that the run was successful and returned more than one value."
+  [run-body]
+  `(let [goal-values# ~run-body]
+     (t/is (> (count goal-values#) 1))))
+
+(defmacro u
+  "Assert that a run fails."
+  [run-body]
+  `(let [goal-values# ~run-body]
+     (t/is (not (seq goal-values#)))))
+
+(defmacro s-as
+  "Assert that the run is successful and returns a sequence of values equivalent to `coll`."
+  [coll run-body]
+  `(let [goal-values# ~run-body
+         a-coll# (if (coll? ~coll)
+                   ~coll
+                   '(~coll))]
+     (t/is (= a-coll# goal-values#))))
+
+(defmacro s-includes
+  "Assert that the run is successful and that the items in `coll` are included in the return value. The items in `coll` need not be exhaustive; the assertion only fails if one of the items in `coll` is not returned from the run."
+  [coll run-body]
+  `(let [goal-values# ~run-body
+         a-coll# (if (coll? ~coll)
+                   ~coll
+                   '(~coll))]
+     (t/is (not (some nil?
+                    (for [item# a-coll#]
+                      (some #{item#} goal-values#)))))))
 
 ;; Redefined here for API convenience
 (defn set-driver!
@@ -48,23 +92,31 @@
         (and (ground? gelem)
              (ground? gattr)) (unify a
                                      [elem attr value]
-                                     [gelem gattr (wd/attribute gelem gattr)])
+                                     [gelem gattr (try
+                                                    (wd/attribute gelem gattr)
+                                                    (catch InvalidElementStateException e nil))])
         (ground? gelem) (to-stream
                          (for [attribute *html-attributes*]
                            (unify a
                                   [elem attr value]
-                                  [gelem attribute (wd/attribute gelem attribute)])))
+                                  [gelem attribute (try
+                                                     (wd/attribute gelem attribute)
+                                                     (catch InvalidElementStateException e nil))])))
         (ground? gattr) (to-stream
                          (for [element (all-elements)]
                            (unify a
                                   [elem attr value]
-                                  [element gattr (wd/attribute element gattr)])))
+                                  [element gattr (try
+                                                   (wd/attribute element gattr)
+                                                   (catch InvalidElementStateException e nil))])))
         :default (to-stream
                   (for [element (all-elements)
                         attribute *html-attributes*]
                     (unify a
                            [elem attr value]
-                           [element attribute (wd/attribute element attribute)])))))))
+                           [element attribute (try
+                                                (wd/attribute element attribute)
+                                                (catch InvalidElementStateException e nil))])))))))
 
 ;; TODO: You can't put q everywhere, `parent-elem` is assumed grounded
 (defn childo
