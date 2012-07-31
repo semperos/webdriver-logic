@@ -73,9 +73,9 @@
   (wd/find-elements *driver* *search-domain*))
 
 (defn all-child-elements
-  "Shortcut for using WebDriver to get all elements beneath an element"
+  "Shortcut for using WebDriver to get all elements beneath an element. Deletes any Element records that have a nil `:webelement` entry."
   [parent-elem]
-  (wd/find-elements parent-elem *child-search-domain*))
+  (remove #(nil? (:webelement %)) (wd/find-elements parent-elem *child-search-domain*)))
 
 ;; ### Relations ###
 ;;
@@ -127,11 +127,34 @@
   "A relation where `child-elem` is a child element of the `parent-elem` element on the current page."
   [child-elem parent-elem]
   (fn [a]
-    (to-stream
-     (map #(unify a
-                  [child-elem parent-elem]
-                  [% parent-elem])
-          (all-child-elements parent-elem)))))
+    (let [gchild (walk a child-elem)
+          gparent (walk a parent-elem)]
+      (cond
+        (and (ground? gparent)
+             (ground? gchild)) (if (some #{gchild} (all-child-elements gparent))
+                                 (unify a
+                                        [child-elem parent-elem]
+                                        [gchild gparent])
+                                 (fail a))
+        (ground? gparent) (to-stream
+                           (map #(unify a
+                                        [child-elem parent-elem]
+                                        [% gparent])
+                                (all-child-elements gparent)))
+        (ground? gchild) (to-stream
+                          (flatten
+                           (for [el-parent (all-elements)]
+                             (map #(unify a
+                                          [child-elem parent-elem]
+                                          [% el-parent])
+                                  (all-child-elements el-parent)))))
+        :default        (to-stream
+                         (flatten
+                          (for [el-parent (all-elements)]
+                            (map #(unify a
+                                         [child-elem parent-elem]
+                                         [% el-parent])
+                                 (all-child-elements el-parent)))))))))
 
 (defn displayedo
   [elem]
