@@ -19,19 +19,20 @@
     :doc "Limit Enlive's querying for *children* to the following."}
   *child-search-domain* [:* :*])
 
-(defn get-source
+(defn source-tree
   "Parse in source code for the current page of the given driver using Enlive"
-  [driver]
-  (if (wd-cache/in-cache? driver :page-source)
-    (first (wd-cache/retrieve driver :page-source))
-    (let [src (h/html-resource (java.io.StringReader. (wd/page-source driver)))]
-      (wd-cache/insert driver :page-source src)
-      src)))
+  ([] (source-tree webdriver-logic.state/*driver*))
+  ([driver]
+     (if (wd-cache/in-cache? driver :page-source)
+       (first (wd-cache/retrieve driver :page-source))
+       (let [src (h/html-resource (java.io.StringReader. (wd/page-source driver)))]
+         (wd-cache/insert driver :page-source src)
+         src))))
 
 (defn all-elements
   "Shortcut for using Enlive to read source and return all elements"
   []
-  (let [tree (get-source *driver*)]
+  (let [tree (source-tree *driver*)]
     (h/select tree *search-domain*)))
 
 (defn all-child-elements
@@ -81,6 +82,7 @@
   "A relation where `child-elem` is a child element of the `parent-elem` element on the current page."
   [child-elem parent-elem]
   (fn [a]
+    (println (count (all-child-elements (first (all-elements)))))
     (let [gchild (walk a child-elem)
           gparent (walk a parent-elem)]
       (cond
