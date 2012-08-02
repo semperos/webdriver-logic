@@ -136,25 +136,25 @@
                                         [child-elem parent-elem]
                                         [gchild gparent])
                                  (fail a))
-        (ground? gparent) (to-stream
-                           (map #(unify a
-                                        [child-elem parent-elem]
-                                        [% gparent])
-                                (all-child-elements gparent)))
-        (ground? gchild) (to-stream
-                          (flatten
-                           (for [el-parent (all-elements)]
-                             (map #(unify a
-                                          [child-elem parent-elem]
-                                          [% el-parent])
-                                  (all-child-elements el-parent)))))
-        :default        (to-stream
-                         (flatten
-                          (for [el-parent (all-elements)]
-                            (map #(unify a
-                                         [child-elem parent-elem]
-                                         [% el-parent])
-                                 (all-child-elements el-parent)))))))))
+             (ground? gparent) (to-stream
+                                (map #(unify a
+                                             [child-elem parent-elem]
+                                             [% gparent])
+                                     (all-child-elements gparent)))
+             (ground? gchild) (to-stream
+                               (flatten
+                                (for [el-parent (all-elements)]
+                                  (map #(unify a
+                                               [child-elem parent-elem]
+                                               [% el-parent])
+                                       (all-child-elements el-parent)))))
+             :default        (to-stream
+                              (flatten
+                               (for [el-parent (all-elements)]
+                                 (map #(unify a
+                                              [child-elem parent-elem]
+                                              [% el-parent])
+                                      (all-child-elements el-parent)))))))))
 
 (defn displayedo
   [elem]

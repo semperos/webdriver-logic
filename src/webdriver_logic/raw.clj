@@ -17,7 +17,7 @@
 (def
   ^{:dynamic true
     :doc "Limit Enlive's querying for *children* to the following."}
-  *child-search-domain* [:*])
+  *child-search-domain* [:* :*])
 
 (defn get-source
   "Parse in source code for the current page of the given driver using Enlive"
@@ -37,8 +37,12 @@
 (defn all-child-elements
   "Shortcut for using Enlive to get all elements beneath an element"
   [parent-elem]
-  (let [tree (get-source *driver*)]
-    (h/select tree (concat parent-elem *child-search-domain*))))
+  (filter map? (h/select parent-elem *child-search-domain*)))
+
+(defn first-element
+  "First item in the contents of an Enlive node that represents another element/node."
+  [node-contents]
+  (first (filter map? node-contents)))
 
 ;; ### Relations ###
 ;;
@@ -74,14 +78,37 @@
                            [element attribute (get-in element [:attrs attribute])])))))))
 
 (defn childo
-  "Same as `childo`, but use the source of the page with Enlive"
+  "A relation where `child-elem` is a child element of the `parent-elem` element on the current page."
   [child-elem parent-elem]
   (fn [a]
-    (to-stream
-     (map #(unify a
-                  [child-elem parent-elem]
-                  [% parent-elem])
-          (all-child-elements parent-elem)))))
+    (let [gchild (walk a child-elem)
+          gparent (walk a parent-elem)]
+      (cond
+        (and (ground? gparent)
+             (ground? gchild)) (if (some #{gchild} (all-child-elements gparent))
+                                 (unify a
+                                        [child-elem parent-elem]
+                                        [gchild gparent])
+                                 (fail a))
+             (ground? gparent) (to-stream
+                                (map #(unify a
+                                             [child-elem parent-elem]
+                                             [% gparent])
+                                     (all-child-elements gparent)))
+             (ground? gchild) (to-stream
+                               (flatten
+                                (for [el-parent (all-elements)]
+                                  (map #(unify a
+                                               [child-elem parent-elem]
+                                               [% el-parent])
+                                       (all-child-elements el-parent)))))
+             :default        (to-stream
+                              (flatten
+                               (for [el-parent (all-elements)]
+                                 (map #(unify a
+                                              [child-elem parent-elem]
+                                              [% el-parent])
+                                      (all-child-elements el-parent)))))))))
 
 (defn existso [elem])
 (defn selectedo [elem])
