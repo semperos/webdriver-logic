@@ -79,7 +79,9 @@
                            [element attribute (get-in element [:attrs attribute])])))))))
 
 (defn childo
-  "A relation where `child-elem` is a child element of the `parent-elem` element on the current page."
+  "NOTE: This causes an error with current released versions of Enlive, due to how core.logic unifies on maps (specifically the StructMap `element` used by Enlive).
+
+   A relation where `child-elem` is a child element of the `parent-elem` element on the current page."
   [child-elem parent-elem]
   (fn [a]
     (println (count (all-child-elements (first (all-elements)))))
@@ -112,8 +114,13 @@
                                               [% el-parent])
                                       (all-child-elements el-parent)))))))))
 
-(defn existso [elem])
-(defn selectedo [elem])
+(defn existso [elem]
+  "NOTE: This causes an error with current released versions of Enlive, due to how core.logic unifies on maps (specifically the StructMap `element` used by Enlive)."
+  (membero elem (all-elements)))
+
+(defn selectedo
+  [elem]
+  (attributeo elem :selected "selected"))
 
 (defn tago
   [elem tag]
@@ -135,8 +142,7 @@
                                   [elem tag]
                                   [el (:tag el)])))))))
 
-;; I feel as though this is feasible, needs consideration how to manipulate
-;; the tree that Enlive produces.
+;; Could ostensibly offer something here, but would require manipulating Enlive's element structs
 ;; (defn texto)
 
 (defn valueo

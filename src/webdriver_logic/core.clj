@@ -122,7 +122,6 @@
                                                 (catch InvalidElementStateException e nil)
                                                 (catch ErrorHandler$UnknownServerException _ nil))])))))))
 
-;; TODO: You can't put q everywhere, `parent-elem` is assumed grounded
 (defn childo
   "A relation where `child-elem` is a child element of the `parent-elem` element on the current page."
   [child-elem parent-elem]
@@ -337,8 +336,9 @@
                                  :args [{}]
                                  :include [ {:xpath "//a"} ]}
                     }
-                   ;;"https://github.com"
-                   "http://localhost:5744"))
+                   "https://github.com"
+                   ;; "http://localhost:5744"
+                   ))
   (set-driver! b)
 
   (do
