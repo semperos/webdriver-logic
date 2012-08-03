@@ -133,7 +133,7 @@ Larger and more meaningful examples forthcoming.
 
 #### Clojure/Lisp ####
 
- * [The Reasoned Schemer](http://mitpress.mit.edu/catalog/item/default.asp?ttype=2&tid=10663) (also [available in Kindle format](http://www.amazon.com/The-Reasoned-Schemer-ebook/dp/B004GEBQS6/ref=kinw_dp_ke?ie=UTF8&m=AG56TWVU5XWC2)
+ * [The Reasoned Schemer](http://mitpress.mit.edu/catalog/item/default.asp?ttype=2&tid=10663) (also [available in Kindle format](http://www.amazon.com/The-Reasoned-Schemer-ebook/dp/B004GEBQS6/ref=kinw_dp_ke?ie=UTF8&m=AG56TWVU5XWC2))
  * [README for core.logic](https://github.com/clojure/core.logic#readme)
  * Ambrose Bonnaire-Sergeant's [Logic Starter tutorial](https://github.com/frenchy64/Logic-Starter/wiki)
  
