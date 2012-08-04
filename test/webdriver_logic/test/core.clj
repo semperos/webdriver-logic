@@ -46,8 +46,7 @@
 
 (deftest test-basic-logic-success
   (s (run* [q]
-           (== q true))
-     :print))
+           (== q true))))
 
 ;; This test doubles as a test of all the s/u test macros
 (deftest test-attributeo
