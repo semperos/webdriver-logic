@@ -4,4 +4,7 @@
                  [org.clojure/core.logic "0.8-alpha1"]
                  [clj-webdriver "0.6.0-SNAPSHOT"]
                  [enlive "1.0.1"]]
-  :dev-dependencies [[criterium "0.2.1"]])
+  :dev-dependencies [[criterium "0.2.1"]
+                     [ring "1.1.1"]
+                     [enlive "1.0.1"]
+                     [net.cgrand/moustache "1.1.0"]])
