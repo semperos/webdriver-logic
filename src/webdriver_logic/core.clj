@@ -18,7 +18,7 @@
   ([run-body print?]
      `(let [goal-values# ~run-body]
         (when ~print?
-          (->> (pprint goal-values#) with-out-str (str "Goal output: ")))
+          (->> (pprint goal-values#) with-out-str (str "Goal output:\n") print))
         (t/is (= (count goal-values#) 1)))))
 
 (defmacro s+
@@ -29,7 +29,7 @@
   ([run-body print?]
      `(let [goal-values# ~run-body]
         (when ~print?
-          (->> (pprint goal-values#) with-out-str (str "Goal output: ")))
+          (->> (pprint goal-values#) with-out-str (str "Goal output:\n") print))
         (t/is (> (count goal-values#) 1)))))
 
 (defmacro s?
