@@ -2,7 +2,8 @@
   (:refer-clojure :exclude [==])
   (:use clojure.core.logic
         [webdriver-logic.state :only [*driver* *html-tags* *html-attributes*]]
-        [webdriver-logic.util :only [fresh? ground?]])
+        [webdriver-logic.util :only [fresh? ground?]]
+        [clojure.pprint :only [pprint]])
   (:require [clojure.test :as t]
             [clj-webdriver.core :as wd]
             [webdriver-logic.state :as st])
@@ -13,17 +14,29 @@
   "Deterministic test. Deterministic predicates are predicates that must succeed exactly once and, for well behaved predicates, leave no choicepoints.
 
    This form is not concerned with the actual value returned, just that the run was successful and returned only one value."
-  [run-body]
-  `(let [goal-values# ~run-body]
-     (t/is (= (count goal-values#) 1))))
+  ([run-body] `(s ~run-body false))
+  ([run-body print?]
+     `(let [goal-values# ~run-body]
+        (when ~print?
+          (->> (pprint goal-values#) with-out-str (str "Goal output: ")))
+        (t/is (= (count goal-values#) 1)))))
 
 (defmacro s+
   "Assert that a run returns more than one value (non-deterministic).
 
    This form is not concerned with the actual values returned, just that the run was successful and returned more than one value."
-  [run-body]
+  ([run-body] `(s+ ~run-body false))
+  ([run-body print?]
+     `(let [goal-values# ~run-body]
+        (when ~print?
+          (->> (pprint goal-values#) with-out-str (str "Goal output: ")))
+        (t/is (> (count goal-values#) 1)))))
+
+(defmacro s?
+  "Assert that a run returns values that, when passed as a seq of values to `pred`, makes `pred` return a truthy value."
+  [pred run-body]
   `(let [goal-values# ~run-body]
-     (t/is (> (count goal-values#) 1))))
+     (t/is (~pred goal-values#))))
 
 (defmacro u
   "Assert that a run fails."
