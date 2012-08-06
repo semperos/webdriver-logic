@@ -6,6 +6,8 @@ The WebDriver Logic library provides a "mirror" of the [clj-webdriver](https://g
 
 **Note:** This library is in the earliest stages of development. Feedback is welcome; use at your own risk.
 
+### Exploration ###
+
 Here's a simple example where we find the first element with a class of `site-logo`:
 
 ```clj
@@ -128,6 +130,21 @@ You can `flash` these elements to convince yourself that the above works:
 ```
 
 Larger and more meaningful examples forthcoming.
+
+### Writing Your Tests ###
+
+Given that core.logic returns values that can be consumed by "regular" functions, it's not hard to imagine how to compose tests against those values. But in the spirit of [Prolog unit tests](http://www.swi-prolog.org/pldoc/package/plunit.html), webdriver-logic provides a handful of macros that wrap clojure.test's `is` macro for common Logic Programming cases:
+
+ * `s` - Succeeds if a single value is returned from the relation (deterministic behavior)
+ * `s+` - Succeeds if more than one value is returned from the relation (non-deterministic behavior)
+ * `s-as` - Succeeds if its first parameter `=` the value returned from the relation
+ * `s-includes` - Succeeds if its first parameter contains values that are included in the value returned from the relation
+ * `s?` - Succeeds if its first parameter, a predicate, returns true when passed the **seq** of values returned from the relation
+ * `u` - Succeeds if the relation fails
+ 
+Remember that core.logic `run*` and friends always return a seq of zero or more values.
+
+For examples of these in action, please see this library's test suite.
 
 ### Logic Programming Materials ###
 
