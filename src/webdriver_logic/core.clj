@@ -242,7 +242,7 @@
                  gelem)
           (fail a))))))
 
-(defn selected
+(defn selectedo
   [elem]
   (fn [a]
     (let [gelem (walk a elem)]
