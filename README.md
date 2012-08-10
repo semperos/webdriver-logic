@@ -139,7 +139,7 @@ Given that core.logic returns values that can be consumed by "regular" functions
  * `s+` - Succeeds if more than one value is returned from the relation (non-deterministic behavior)
  * `s-as` - Succeeds if its first parameter `=` the value returned from the relation
  * `s-includes` - Succeeds if its first parameter contains values that are included in the value returned from the relation
- * `s?` - Succeeds if its first parameter, a predicate, returns true when passed the **seq** of values returned from the relation
+ * `s?` - Succeeds if its first parameter, a predicate, returns true when passed the **seq of values** returned from the relation
  * `u` - Succeeds if the relation fails
  
 Remember that core.logic `run*` and friends always return a seq of zero or more values.
