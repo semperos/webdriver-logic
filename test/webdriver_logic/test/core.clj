@@ -36,6 +36,10 @@
 (use-fixtures :once start-server quit-browser-fixture)
 (use-fixtures :each reset-browser-fixture)
 
+(defn go-to-form-page
+  []
+  (wd/click (wd/find-element driver {:text "example form"})))
+
 ;;
 ;; ### Test Cases ####
 ;;
@@ -115,7 +119,7 @@
 
 (deftest test-enabledo
   ;; Go to the page with forms on it.
-  (wd/click (wd/find-element driver {:text "example form"}))
+  (go-to-form-page)
   ;; The page contains multiple elements that are enabled.
   (s+ (run 2 [q]
            (enabledo q)))
@@ -161,9 +165,30 @@
                (presento (wd/find-element driver {:tag :a, :href "#pages"})))
          ())))
 
+(deftest test-selectedo
+  (go-to-form-page)
+  ;; #countries option[value='bharat']
+  ;; Multiple options in select lists are selected.
+  (s+ (run 2 [q]
+          (selectedo q)))
+  ;; The option element with value `bharat` is selected.
+  (s (run* [q]
+          (selectedo (wd/find-element driver {:css "#countries option[value='bharat']"}))))
+  ;; The option element with value `ayiti` is not selected.
+  (u (run* [q]
+           (selectedo (wd/find-element driver {:css "#countries option[value='ayiti']"}))))
+  (s-includes ["bharat"]
+              (run 2 [q]
+                   (fresh [the-el the-value]
+                          (selectedo the-el)
+                          (attributeo the-el :selected "selected")
+                          (attributeo the-el :value the-value)
+                          (== q the-value)))))
+
+
+
 ;; TODO:
 ;;
-;;  * selectedo
 ;;  * sizeo
 ;;  * tago
 ;;  * texto
