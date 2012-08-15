@@ -4,7 +4,7 @@
         [webdriver-logic.state :only [*driver* *html-tags* *html-attributes*]]
         [webdriver-logic.util :only [fresh? ground?]]
         [clojure.pprint :only [pprint]])
-  (:require [clojure.test :as t]
+  (:require [clojure.test :as test]
             [clj-webdriver.core :as wd]
             [webdriver-logic.state :as st])
   (:import [org.openqa.selenium InvalidElementStateException]
@@ -19,7 +19,7 @@
      `(let [goal-values# ~run-body]
         (when ~print?
           (->> (pprint goal-values#) with-out-str (str "Goal output:\n") print))
-        (t/is (= (count goal-values#) 1)))))
+        (test/is (= (count goal-values#) 1)))))
 
 (defmacro s+
   "Assert that a run returns more than one value (non-deterministic).
@@ -30,37 +30,39 @@
      `(let [goal-values# ~run-body]
         (when ~print?
           (->> (pprint goal-values#) with-out-str (str "Goal output:\n") print))
-        (t/is (> (count goal-values#) 1)))))
+        (test/is (> (count goal-values#) 1)))))
 
 (defmacro s?
   "Assert that a run returns values that, when passed as a seq of values to `pred`, makes `pred` return a truthy value."
   [pred run-body]
   `(let [goal-values# ~run-body]
-     (t/is (~pred goal-values#))))
+     (test/is (~pred goal-values#))))
 
 (defmacro u
   "Assert that a run fails."
   [run-body]
   `(let [goal-values# ~run-body]
-     (t/is (not (seq goal-values#)))))
+     (test/is (not (seq goal-values#)))))
 
 (defmacro s-as
   "Assert that the run is successful and returns a sequence of values equivalent to `coll`. If only a single value is expected, `coll` may be this standalone value."
   [coll run-body]
   `(let [goal-values# ~run-body
-         a-coll# (if (coll? ~coll)
+         a-coll# (if (and (coll? ~coll)
+                          (not (map? ~coll)))
                    ~coll
                    '(~coll))]
-     (t/is (= a-coll# goal-values#))))
+     (test/is (= a-coll# goal-values#))))
 
 (defmacro s-includes
   "Assert that the run is successful and that the items in `coll` are included in the return value. The items in `coll` need not be exhaustive; the assertion only fails if one of the items in `coll` is not returned from the run."
   [coll run-body]
   `(let [goal-values# ~run-body
-         a-coll# (if (coll? ~coll)
+         a-coll# (if (and (coll? ~coll)
+                          (not (map? ~coll)))
                    ~coll
                    '(~coll))]
-     (t/is (not (some nil?
+     (test/is (not (some nil?
                       (map #(some #{%} goal-values#) a-coll#))))))
 
 ;; Redefined here for API convenience
@@ -344,6 +346,10 @@
 
 (comment
 
+  ;; This webdriver-logic.core ns should use clj-webdriver.core (as it does)
+  ;; but using Taxi is preferred for higher-level use
+  (require '[clj-webdriver.taxi :as t])
+  ;; Defining a var in this ns for convenience
   (def b (wd/start {:browser :firefox
                     :cache-spec {:strategy :basic
                                  :args [{}]
@@ -352,6 +358,9 @@
                    "https://github.com"
                    ;; "http://localhost:5744"
                    ))
+  ;; For the Taxi API
+  (t/set-driver! b)
+  ;; For webdriver-logic, to make code more concise
   (set-driver! b)
 
   (do

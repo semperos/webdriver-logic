@@ -14,10 +14,11 @@
   (let [new-driver (if (driver? browser-spec)
                      browser-spec
                      (wd/new-driver browser-spec))]
-       (alter-var-root (var *driver*)
-                       (constantly new-driver)
-                       (when (thread-bound? (var *driver*))
-                         (set! *driver* new-driver)))))
+    (alter-var-root (var *driver*)
+                    (constantly new-driver)
+                    (when (thread-bound? (var *driver*))
+                      (set! *driver* new-driver)))))
+
 (defn set-driver!
   ([browser-spec] (set-driver* browser-spec))
   ([browser-spec url] (wd/to (set-driver* browser-spec) url)))
