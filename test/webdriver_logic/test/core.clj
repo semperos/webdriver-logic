@@ -185,7 +185,25 @@
                           (attributeo the-el :value the-value)
                           (== q the-value)))))
 
-
+(deftest test-sizeo
+  ;; The first table on the page is 567x105
+  (s (run* [q]
+           (sizeo (wd/find-element driver {:tag :table}) {:width 567 :height 105})))
+  ;; Tell me that the first table is 567x105
+  (s-as {:width 567 :height 105}
+        (run* [q]
+              (sizeo (wd/find-element driver {:tag :table}) q)))
+  ;; The first table on the page is not 10x10
+  (u (run* [q]
+           (sizeo (wd/find-element driver {:tag :table}) {:width 10 :height 10})))
+  ;; The first element on the page with a size of 567x105 is a `table` element
+  (s-as "table"
+        (binding [*search-domain* {:css "#content *"}]
+          (run 1 [q]
+               (fresh [the-el the-tag]
+                      (sizeo the-el {:width 567 :height 105})
+                      (tago the-el the-tag)
+                      (== q the-tag))))))
 
 ;; TODO:
 ;;
