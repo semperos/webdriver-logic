@@ -11,7 +11,8 @@ The WebDriver Logic library provides a "mirror" of the [clj-webdriver](https://g
 Here's a simple example where we find the first element with a class of `site-logo`:
 
 ```clj
-;; This stores the driver in *driver*
+(use 'webdriver-logic.core)
+(require '[clj-webdriver.core :as wd])
 (set-driver! {:browser :chrome} "https://github.com")
 
 (run 1 [q]
