@@ -145,12 +145,6 @@
 ;; Could ostensibly offer something here, but would require manipulating Enlive's element structs
 ;; (defn texto)
 
-(defn valueo
-  "Shortcut for attributeo with `value` attribute"
-  [elem value]
-  (attributeo elem :value value))
-
-
 (comment
 
   (use '[clj-webdriver.core :as wd])

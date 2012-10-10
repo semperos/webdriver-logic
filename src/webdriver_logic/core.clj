@@ -324,11 +324,6 @@
                                   [elem text]
                                   [el (wd/text el)])))))))
 
-(defn valueo
-  "Shortcut for attributeo with `value` attribute"
-  [elem value]
-  (attributeo elem "value" value))
-
 (defn visibleo
   "Visible elements"
   [elem]
