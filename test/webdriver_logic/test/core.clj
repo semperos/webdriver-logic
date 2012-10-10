@@ -45,7 +45,7 @@
 ;;
 ;; Yes, these do beg the question.
 ;;
-;; Also, `*search-domain*` gets rebound often due to performance reasons.
+;; Note: `*search-domain*` is rebound often to improve performance.
 ;;
 
 (deftest test-basic-logic-success
@@ -205,13 +205,61 @@
                       (tago the-el the-tag)
                       (== q the-tag))))))
 
-;; TODO:
-;;
-;;  * sizeo
-;;  * tago
-;;  * texto
-;;  * valueo
-;;  * visibleo
-;;
+(deftest test-tago
+  ;; There are multiple anchor tags on the page
+  (s+ (run* [q]
+           (tago q "a")))
+  ;; The first anchor tag has text "Moustache"
+  (s (run 1 [q]
+          (tago q "a")
+          (texto q "Moustache")))
+  ;; The first anchor tag has a class attribute of "external"
+  (s (run 1 [q]
+          (tago q "a")
+          (attributeo q "class" "external")))
+  ;; There are no elements with a tag of "textarea" on this page
+  (u (run* [q]
+           (tago q "textarea")))
+  (let [first-anchor (wd/find-element driver {:css "a.external"})]
+    ;; Test a grounded element
+    (s-as "Moustache"
+          (run 1 [q]
+               (tago first-anchor "a")
+               (texto first-anchor q)))))
+
+(deftest test-texto
+  ;; The text of the first paragraph contains "Moustache"
+  (is (re-find #"Moustache" (first
+                             (run 1 [q]
+                                  (texto (wd/find-element driver {:tag :p}) q)))))
+  ;; There are anchor tags on the page with text of these values
+  (s-includes ["is amazing!" "clj-webdriver" "Stuart"]
+              (binding [*search-domain* {:css "a"}]
+                (run* [q]
+                      (fresh [el txt]
+                             (tago el "a")
+                             (texto el txt)
+                             (== q txt)))))
+  ;; There's only one link on the page with text of "is amazing!"
+  (s (binding [*search-domain* {:css "a"}]
+       (run* [q]
+             (tago q "a")
+             (texto q "is amazing!")))))
+
+(deftest test-visibleo
+  ;; The first link on the page is not visible
+  (u (run 1 [q]
+          (== q (wd/find-element driver {:tag :a}))
+          (visibleo q)))
+  ;; But first link with class of external is visible
+  (s (run 1 [q]
+          (== q (wd/find-element driver {:css "a.external"}))
+          (visibleo q)))
+  ;; There are multiple visible paragraphs
+  (s+ (binding [*search-domain* {:css "p"}]
+        (run* [q]
+              (tago q "p")
+              (visibleo q)))))
+
 ;; And then tests combining all relations in various orders with
 ;; ground and fresh variables in all possible positions.
