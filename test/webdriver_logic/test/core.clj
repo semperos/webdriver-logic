@@ -1,28 +1,16 @@
 (ns webdriver-logic.test.core
   (:refer-clojure :exclude [==])
   (:use [webdriver-logic.core]
+        [webdriver-logic.test.util :only [start-server test-base-url]]
         [clojure.core.logic :exclude [is]]
-        [clojure.test]
-        [ring.adapter.jetty :only [run-jetty]])
-  (:require [clj-webdriver.core :as wd]
-            [webdriver-logic.test.example-app.core :as web-app]))
+        [clojure.test])
+  (:require [clj-webdriver.core :as wd]))
 
 ;; ## Setup ##
-(def test-port 5745)
-(def test-host "localhost")
-(def test-base-url (str "http://" test-host ":" test-port "/"))
 (def driver (wd/new-driver {:browser :firefox}))
 (set-driver! driver)
 
 ;; Fixtures
-(defn start-server [f]
-  (loop [server (run-jetty #'web-app/routes {:port test-port, :join? false})]
-    (if (.isStarted server)
-      (do
-        (f)
-        (.stop server))
-      (recur server))))
-
 (defn reset-browser-fixture
   [f]
   (wd/to driver test-base-url)
