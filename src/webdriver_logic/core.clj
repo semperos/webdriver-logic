@@ -2,13 +2,11 @@
   (:refer-clojure :exclude [==])
   (:use clojure.core.logic
         [webdriver-logic.state :only [*driver* *html-tags* *html-attributes*]]
-        [webdriver-logic.util :only [fresh? ground?]]
+        [webdriver-logic.util :only [fresh? ground? careful-attribute]]
         [clojure.pprint :only [pprint]])
   (:require [clojure.test :as test]
             [clj-webdriver.core :as wd]
-            [webdriver-logic.state :as st])
-  (:import [org.openqa.selenium InvalidElementStateException]
-           [org.openqa.selenium.remote ErrorHandler$UnknownServerException]))
+            [webdriver-logic.state :as st]))
 
 (defmacro s
   "Deterministic test. Deterministic predicates are predicates that must succeed exactly once and, for well behaved predicates, leave no choicepoints.
@@ -107,35 +105,23 @@
         (and (ground? gelem)
              (ground? gattr)) (unify a
                                      [elem attr value]
-                                     [gelem gattr (try
-                                                    (wd/attribute gelem gattr)
-                                                    (catch InvalidElementStateException _ nil)
-                                                    (catch ErrorHandler$UnknownServerException _ nil))])
+                                     [gelem gattr (careful-attribute gelem gattr)])
         (ground? gelem) (to-stream
                          (for [attribute *html-attributes*]
                            (unify a
                                   [elem attr value]
-                                  [gelem attribute (try
-                                                     (wd/attribute gelem attribute)
-                                                     (catch InvalidElementStateException e nil)
-                                                     (catch ErrorHandler$UnknownServerException _ nil))])))
+                                  [gelem attribute (careful-attribute gelem attribute)])))
         (ground? gattr) (to-stream
                          (for [element (all-elements)]
                            (unify a
                                   [elem attr value]
-                                  [element gattr (try
-                                                   (wd/attribute element gattr)
-                                                   (catch InvalidElementStateException e nil)
-                                                   (catch ErrorHandler$UnknownServerException _ nil))])))
+                                  [element gattr (careful-attribute element gattr)])))
         :default (to-stream
                   (for [element (all-elements)
                         attribute *html-attributes*]
                     (unify a
                            [elem attr value]
-                           [element attribute (try
-                                                (wd/attribute element attribute)
-                                                (catch InvalidElementStateException e nil)
-                                                (catch ErrorHandler$UnknownServerException _ nil))])))))))
+                           [element attribute (careful-attribute element attribute)])))))))
 
 (defn childo
   "A relation where `child-elem` is a child element of the `parent-elem` element on the current page."
