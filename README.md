@@ -147,6 +147,22 @@ Remember that core.logic `run*` and friends always return a seq of zero or more 
 
 For examples of these in action, please see this library's test suite.
 
+### Contributing ###
+
+This library is currently in the earliest stages of development. Pull requests against master are welcome, preferably authored in a feature branch.
+
+Run the tests with Leiningen:
+
+```
+lein test
+```
+
+*Note:* If you just want to run the example app that webdriver-logic uses for its testing purposes, do the following:
+
+ * Open a terminal and run `lein repl` or at the root of this project
+ * Evaluate `(use 'webdriver-logic.test.example-app.core 'ring.adapter.jetty)`
+ * Evaluate `(defonce my-server (run-jetty #'routes {:port 5744, :join? false}))` (make sure your port selection doesn't conflict with actual test runs)
+
 ### Logic Programming Materials ###
 
 #### Clojure/Lisp ####
