@@ -50,7 +50,7 @@
 ;; See the webdriver-logic.test.benchmarks namespaces for performance details
 
 (defn attributeo
-  "Same as `attributeo`, but use the source of the page with Enlive"
+  "A goal that succeeds if the attribute `attr` has a value `value` for the given `elem` on the current page. This function uses Enlive to traverse the HTML of the DOM as exported by `clj-webdriver.core/page-source`."
   [elem attr value]
   (fn [a]
     (let [gelem (walk a elem)
@@ -79,9 +79,9 @@
                            [element attribute (get-in element [:attrs attribute])])))))))
 
 (defn childo
-  "NOTE: This causes an error with current released versions of Enlive, due to how core.logic unifies on maps (specifically the StructMap `element` used by Enlive).
+  "**NOTE:** This causes an error with the officially released version of Enlive, due to how core.logic unifies on structmaps (specifically the StructMap `element` used by Enlive). The `org.clojars.semperos/enlive` is a temporary solution to this issue.
 
-   A relation where `child-elem` is a child element of the `parent-elem` element on the current page."
+   A goal that succeeds if the `child-elem` is a child of the `parent-elem` on the current page. This function uses Enlive to traverse the HTML of the DOM as exported by `clj-webdriver.core/page-source`."
   [child-elem parent-elem]
   (fn [a]
     (println (count (all-child-elements (first (all-elements)))))
@@ -115,14 +115,18 @@
                                       (all-child-elements el-parent)))))))))
 
 (defn existso [elem]
-  "NOTE: This causes an error with current released versions of Enlive, due to how core.logic unifies on maps (specifically the StructMap `element` used by Enlive)."
+  "**NOTE:** This causes an error with the officially released version of Enlive, due to how core.logic unifies on structmaps (specifically the StructMap `element` used by Enlive). The `org.clojars.semperos/enlive` is a temporary solution to this issue.
+
+   A goal that succeeds if the given `elem` exists on the current page (regardless of other attributes). This function uses Enlive to traverse the HTML of the DOM as exported by `clj-webdriver.core/page-source`."
   (membero elem (all-elements)))
 
 (defn selectedo
+  "A goal that succeeds if the given `elem` is selected on the current page. This function uses Enlive to traverse the HTML of the DOM as exported by `clj-webdriver.core/page-source`."
   [elem]
   (attributeo elem :selected "selected"))
 
 (defn tago
+  "A goal that succeeds if `tag` unifies with the tag name of the given `elem` on the current page. This function uses Enlive to traverse the HTML of the DOM as exported by `clj-webdriver.core/page-source`."
   [elem tag]
   (fn [a]
     (let [gelem (walk a elem)

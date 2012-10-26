@@ -43,7 +43,7 @@
      (test/is (not (seq goal-values#)))))
 
 (defmacro s-as
-  "Assert that the run is successful and returns a sequence of values equivalent to `coll`. If only a single value is expected, `coll` may be this standalone value."
+  "Assert that the run is successful and returns a sequence of values equivalent to `coll`. If only a single value is expected, as a convenience `coll` may be this standalone value."
   [coll run-body]
   `(let [goal-values# ~run-body
          a-coll# (if (and (coll? ~coll)
@@ -65,6 +65,7 @@
 
 ;; Redefined here for API convenience
 (defn set-driver!
+  "Set the `clj-webdriver.driver.Driver` record to be used with this API."
   ([browser-spec] (st/set-driver! browser-spec))
   ([browser-spec url] (st/set-driver! browser-spec url)))
 
@@ -95,7 +96,7 @@
 ;; See the webdriver-logic.test.benchmarks namespaces for performance details
 
 (defn attributeo
-  "A relation where `elem` has value `value` for its `attr` attribute"
+  "A goal that succeeds if the attribute `attr` has a value `value` for the given `elem` on the current page"
   [elem attr value]
   (fn [a]
     (let [gelem (walk a elem)
@@ -124,7 +125,7 @@
                            [element attribute (careful-attribute element attribute)])))))))
 
 (defn childo
-  "A relation where `child-elem` is a child element of the `parent-elem` element on the current page."
+  "A goal that succeeds if the `child-elem` is a child of the `parent-elem` on the current page"
   [child-elem parent-elem]
   (fn [a]
     (let [gchild (walk a child-elem)
