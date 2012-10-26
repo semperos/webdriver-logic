@@ -1,73 +1,34 @@
 (ns webdriver-logic.core
   (:refer-clojure :exclude [==])
   (:use clojure.core.logic
-        [webdriver-logic.state :only [*driver* *html-tags* *html-attributes*]]
+        [clj-webdriver.driver :only [driver?]]
+        [webdriver-logic.state :only [*html-tags* *html-attributes*]]
         [webdriver-logic.util :only [fresh? ground? careful-attribute]]
         [clojure.pprint :only [pprint]])
   (:require [clojure.test :as test]
             [clj-webdriver.core :as wd]
             [webdriver-logic.state :as st]))
 
-(defmacro s
-  "Deterministic test. Deterministic predicates are predicates that must succeed exactly once and, for well behaved predicates, leave no choicepoints.
+(def
+  ^{:dynamic true
+    :doc "The `Driver` instance to be used by the relations. Without this we'd be forced to pass in a 'grounded' var of the driver for every relation. Set this using set-driver!"}
+  *driver*)
 
-   This form is not concerned with the actual value returned, just that the run was successful and returned only one value."
-  ([run-body] `(s ~run-body false))
-  ([run-body print?]
-     `(let [goal-values# ~run-body]
-        (when ~print?
-          (->> (pprint goal-values#) with-out-str (str "Goal output:\n") print))
-        (test/is (= (count goal-values#) 1)))))
+(defn- set-driver*
+  "Given a `browser-spec`, instantiate a new Driver record and assign to `*driver*`."
+  [browser-spec]
+  (let [new-driver (if (driver? browser-spec)
+                     browser-spec
+                     (wd/new-driver browser-spec))]
+    (alter-var-root (var *driver*)
+                    (constantly new-driver)
+                    (when (thread-bound? (var *driver*))
+                      (set! *driver* new-driver)))))
 
-(defmacro s+
-  "Assert that a run returns more than one value (non-deterministic).
-
-   This form is not concerned with the actual values returned, just that the run was successful and returned more than one value."
-  ([run-body] `(s+ ~run-body false))
-  ([run-body print?]
-     `(let [goal-values# ~run-body]
-        (when ~print?
-          (->> (pprint goal-values#) with-out-str (str "Goal output:\n") print))
-        (test/is (> (count goal-values#) 1)))))
-
-(defmacro s?
-  "Assert that a run returns values that, when passed as a seq of values to `pred`, makes `pred` return a truthy value."
-  [pred run-body]
-  `(let [goal-values# ~run-body]
-     (test/is (~pred goal-values#))))
-
-(defmacro u
-  "Assert that a run fails."
-  [run-body]
-  `(let [goal-values# ~run-body]
-     (test/is (not (seq goal-values#)))))
-
-(defmacro s-as
-  "Assert that the run is successful and returns a sequence of values equivalent to `coll`. If only a single value is expected, as a convenience `coll` may be this standalone value."
-  [coll run-body]
-  `(let [goal-values# ~run-body
-         a-coll# (if (and (coll? ~coll)
-                          (not (map? ~coll)))
-                   ~coll
-                   '(~coll))]
-     (test/is (= a-coll# goal-values#))))
-
-(defmacro s-includes
-  "Assert that the run is successful and that the items in `coll` are included in the return value. The items in `coll` need not be exhaustive; the assertion only fails if one of the items in `coll` is not returned from the run."
-  [coll run-body]
-  `(let [goal-values# ~run-body
-         a-coll# (if (and (coll? ~coll)
-                          (not (map? ~coll)))
-                   ~coll
-                   '(~coll))]
-     (test/is (not (some nil?
-                      (map #(some #{%} goal-values#) a-coll#))))))
-
-;; Redefined here for API convenience
 (defn set-driver!
   "Set the `clj-webdriver.driver.Driver` record to be used with this API."
-  ([browser-spec] (st/set-driver! browser-spec))
-  ([browser-spec url] (st/set-driver! browser-spec url)))
+  ([browser-spec] (set-driver* browser-spec))
+  ([browser-spec url] (wd/to (set-driver* browser-spec) url)))
 
 ;; Kudos to http://tsdh.wordpress.com/2012/01/06/using-clojures-core-logic-with-custom-data-structures/
 
@@ -279,22 +240,12 @@
   "A goal that succeeds if `tag` unifies with the tag name of the given `elem` on the current page"
   [elem tag]
   (fn [a]
-    (let [gelem (walk a elem)
-          gtag (walk a tag)]
+    (let [gelem (walk a elem)]
       (cond
-        (ground? gelem) (unify a
-                               [elem tag]
-                               [gelem (wd/tag gelem)])
-        (ground? gtag)  (to-stream
-                         (for [el (all-elements)]
-                           (unify a
-                                  [elem tag]
-                                  [el (wd/tag el)])))
+        (ground? gelem) (unify a tag (wd/tag gelem))
         :default        (to-stream
-                         (for [el (all-elements)]
-                           (unify a
-                                  [elem tag]
-                                  [el (wd/tag el)])))))))
+                         (map #(unify a [elem tag] [% (wd/tag %)])
+                              (all-elements)))))))
 
 (defn texto
   "A goal that succeeds if `text` unifies with the textual content of the given `elem` on the current page"

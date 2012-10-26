@@ -2,12 +2,33 @@
   webdriver-logic.raw
   (:refer-clojure :exclude [==])
   (:use clojure.core.logic
-        [webdriver-logic.state :only [set-driver! *driver*
-                                      *html-tags* *html-attributes*]]
+        [clj-webdriver.driver :only [driver?]]
+        [webdriver-logic.state :only [*html-tags* *html-attributes*]]
         [webdriver-logic.util :only [fresh? ground?]])
   (:require [clj-webdriver.core :as wd]
             [clj-webdriver.cache :as wd-cache]
             [net.cgrand.enlive-html :as h]))
+
+(def
+  ^{:dynamic true
+    :doc "The `Driver` instance to be used by the relations. Without this we'd be forced to pass in a 'grounded' var of the driver for every relation. Set this using set-driver!"}
+  *driver*)
+
+(defn- set-driver*
+  "Given a `browser-spec`, instantiate a new Driver record and assign to `*driver*`."
+  [browser-spec]
+  (let [new-driver (if (driver? browser-spec)
+                     browser-spec
+                     (wd/new-driver browser-spec))]
+    (alter-var-root (var *driver*)
+                    (constantly new-driver)
+                    (when (thread-bound? (var *driver*))
+                      (set! *driver* new-driver)))))
+
+(defn set-driver!
+  "Set the `clj-webdriver.driver.Driver` record to be used with this API."
+  ([browser-spec] (set-driver* browser-spec))
+  ([browser-spec url] (wd/to (set-driver* browser-spec) url)))
 
 (def
   ^{:dynamic true
@@ -21,7 +42,7 @@
 
 (defn source-tree
   "Parse in source code for the current page of the given driver using Enlive"
-  ([] (source-tree webdriver-logic.state/*driver*))
+  ([] (source-tree *driver*))
   ([driver]
      (if (wd-cache/in-cache? driver :page-source)
        (first (wd-cache/retrieve driver :page-source))
@@ -132,19 +153,10 @@
     (let [gelem (walk a elem)
           gtag (walk a tag)]
       (cond
-        (ground? gelem) (unify a
-                               [elem tag]
-                               [gelem (:tag gelem)])
-        (ground? gtag)  (to-stream
-                         (for [el (all-elements)]
-                           (unify a
-                                  [elem tag]
-                                  [el (:tag el)])))
+        (ground? gelem) (unify a tag (:tag gelem))
         :default        (to-stream
-                         (for [el (all-elements)]
-                           (unify a
-                                  [elem tag]
-                                  [el (:tag el)])))))))
+                         (map #(unify a [elem tag] [% (:tag %)])
+                              (all-elements)))))))
 
 ;; Could ostensibly offer something here, but would require manipulating Enlive's element structs
 ;; (defn texto)

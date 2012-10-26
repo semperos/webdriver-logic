@@ -1,27 +1,5 @@
 (ns ^{:doc "Namespace for managing state required by multiple namespaces."}
-  webdriver-logic.state
-  (:use [clj-webdriver.driver :only [driver?]])
-  (:require [clj-webdriver.core :as wd]))
-
-(def
-  ^{:dynamic true
-    :doc "The `Driver` instance to be used by the relations. Without this we'd be forced to pass in a 'grounded' var of the driver for every relation. Set this using set-driver!"}
-  *driver*)
-
-(defn- set-driver*
-  "Given a `browser-spec`, instantiate a new Driver record and assign to `*driver*`."
-  [browser-spec]
-  (let [new-driver (if (driver? browser-spec)
-                     browser-spec
-                     (wd/new-driver browser-spec))]
-    (alter-var-root (var *driver*)
-                    (constantly new-driver)
-                    (when (thread-bound? (var *driver*))
-                      (set! *driver* new-driver)))))
-
-(defn set-driver!
-  ([browser-spec] (set-driver* browser-spec))
-  ([browser-spec url] (wd/to (set-driver* browser-spec) url)))
+  webdriver-logic.state)
 
 ;; See http://www.w3.org/2002/08/xhtml/xhtml1-transitional.xsd for tags and attributes
 
