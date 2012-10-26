@@ -1,45 +1,46 @@
 (ns webdriver-logic.test.raw
   (:refer-clojure :exclude [==])
-  (:use [webdriver-logic.raw]
-        [webdriver-logic.test.util :only [start-server]]
-        [clojure.core.logic :exclude [is]]
-        clojure.test)
+  (:use clojure.test
+        webdriver-logic.test
+        webdriver-logic.raw
+        [webdriver-logic.test.util :only [start-server test-base-url]]
+        [clojure.core.logic :exclude [is]])
   (:require [clj-webdriver.core :as wd]
             [webdriver-logic.test.example-app.core :as web-app]))
 
 ;; ## Setup ##
-;; (def driver (wd/new-driver {:browser :firefox}))
-;; (set-driver! driver)
+(def driver (wd/new-driver {:browser :firefox}))
+(set-driver! driver)
 
-;; ;; Fixtures
-;; (defn reset-browser-fixture
-;;   [f]
-;;   (wd/to driver test-base-url)
-;;   (f))
+;; Fixtures
+(defn reset-browser-fixture
+  [f]
+  (wd/to driver test-base-url)
+  (f))
 
-;; (defn quit-browser-fixture
-;;   [f]
-;;   (f)
-;;   (wd/quit driver))
+(defn quit-browser-fixture
+  [f]
+  (f)
+  (wd/quit driver))
 
-;; (use-fixtures :once start-server quit-browser-fixture)
-;; (use-fixtures :each reset-browser-fixture)
+(use-fixtures :once start-server quit-browser-fixture)
+(use-fixtures :each reset-browser-fixture)
 
-;; (defn go-to-form-page
-;;   []
-;;   (wd/click (wd/find-element driver {:text "example form"})))
+(defn go-to-form-page
+  []
+  (wd/click (wd/find-element driver {:text "example form"})))
 
-;; ;;
-;; ;; ### Test Cases ####
-;; ;;
-;; ;; Yes, these do beg the question.
-;; ;;
-;; ;; Note: `*search-domain*` is rebound often to improve performance.
-;; ;;
+;;
+;; ### Test Cases ####
+;;
+;; Yes, these do beg the question.
+;;
+;; Note: `*search-domain*` is rebound often to improve performance.
+;;
 
-;; (deftest test-basic-logic-success
-;;   (s (run* [q]
-;;            (== q true))))
+(deftest test-basic-logic-success
+  (s (run* [q]
+           (== q true))))
 
 ;; ;; This test doubles as a test of all the s/u test macros.
 ;; (deftest test-attributeo

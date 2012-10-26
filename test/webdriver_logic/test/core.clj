@@ -1,6 +1,7 @@
 (ns webdriver-logic.test.core
   (:refer-clojure :exclude [==])
-  (:use [webdriver-logic.core]
+  (:use webdriver-logic.core
+        webdriver-logic.test
         [webdriver-logic.test.util :only [start-server test-base-url]]
         [clojure.core.logic :exclude [is]]
         [clojure.test])

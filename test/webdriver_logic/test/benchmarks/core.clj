@@ -2,6 +2,7 @@
   (:refer-clojure :exclude [==])
   (:use webdriver-logic.core
         clojure.core.logic
+        [clj-webdriver.core :only [quit start]]
         criterium.core)
   (:require [webdriver-logic.raw :as raw]))
 
@@ -9,16 +10,18 @@
 
 (defn start-browser
   []
-  (set-driver! {:browser :firefox
-                    :cache-spec {:strategy :basic
-                                 :args [{}]
-                                 :include [ {:xpath "//a"} ]}
-                    }
-               *default-url*))
+  (let [d (start {:browser :chrome
+                  :cache-spec {:strategy :basic
+                               :args [{}]
+                               :include [ {:xpath "//a"} ]}
+                  } *default-url*)]
+    (set-driver! d)
+    (raw/set-driver! d))
+  )
 
 (defn quit-browser
   []
-  (clj-webdriver.core/quit webdriver-logic.state/*driver*))
+  (quit *driver*))
 
 ;; ## Benchmarks ##
 ;;
