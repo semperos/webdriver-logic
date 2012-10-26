@@ -8,3 +8,4 @@ chromedriver.log
 checkouts/
 target/
 docs/
+doc/
