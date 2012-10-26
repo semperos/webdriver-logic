@@ -157,6 +157,7 @@
                                       (all-child-elements el-parent)))))))))
 
 (defn displayedo
+  "A goal that succeeds if the given `elem` is displayed (visible) on the current page"
   [elem]
   (fn [a]
     (let [gelem (walk a elem)]
@@ -175,6 +176,7 @@
           (fail a))))))
 
 (defn enabledo
+  "A goal that succeeds if the given `elem` is enabled on the current page"
   [elem]
   (fn [a]
     (let [gelem (walk a elem)]
@@ -193,6 +195,7 @@
           (fail a))))))
 
 (defn existso
+  "A goal that succeeds if the given `elem` exists on the current page (regardless of other attributes)"
   [elem]
   (fn [a]
     (let [gelem (walk a elem)]
@@ -213,6 +216,7 @@
 (defn intersecto [])
 
 (defn presento
+  "A goal that succeeds if the given `elem` both exists and is visible on the current page"
   [elem]
   (fn [a]
     (let [gelem (walk a elem)]
@@ -231,6 +235,7 @@
           (fail a))))))
 
 (defn selectedo
+  "A goal that succeeds if the given `elem` is selected on the current page"
   [elem]
   (fn [a]
     (let [gelem (walk a elem)]
@@ -249,6 +254,7 @@
           (fail a))))))
 
 (defn sizeo
+  "A goal that succeeds if `size` unifies with the size of the given `elem` on the current page"
   [elem size]
   (fn [a]
     (let [gelem (walk a elem)
@@ -269,7 +275,7 @@
                                   [el (wd/size el)])))))))
 
 (defn tago
-  "This `elem` has this `tag` name"
+  "A goal that succeeds if `tag` unifies with the tag name of the given `elem` on the current page"
   [elem tag]
   (fn [a]
     (let [gelem (walk a elem)
@@ -290,6 +296,7 @@
                                   [el (wd/tag el)])))))))
 
 (defn texto
+  "A goal that succeeds if `text` unifies with the textual content of the given `elem` on the current page"
   [elem text]
   (fn [a]
     (let [gelem (walk a elem)
@@ -311,7 +318,7 @@
                                   [el (wd/text el)])))))))
 
 (defn visibleo
-  "Visible elements"
+  "A goal that succeeds if the given `elem` is visible on the current page"
   [elem]
   (fn [a]
     (let [gelem (walk a elem)]
