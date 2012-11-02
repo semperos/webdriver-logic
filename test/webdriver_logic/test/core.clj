@@ -93,10 +93,30 @@
   ;; The content div has multiple children.
   (s+ (run 3 [q]
            (childo q (wd/find-element driver {:css "#content"}))))
+  ;; Extra statements
+  (s+ (run 3 [q]
+           (fresh [parent]
+                  (== parent (wd/find-element driver {:css "#content"}))
+                  (childo q parent))))
+  ;; Switch statement order
+  (s+ (run 3 [q]
+           (fresh [parent]
+                  (childo q parent)
+                  (== parent (wd/find-element driver {:css "#content"})))))
   ;; A direct child anchor tag of a direct child paragraph tag of the element
   ;; with id `content` has multiple parents.
   (s+ (run 2 [q]
-           (childo (wd/find-element driver {:css "#content > p > a"}) q))))
+           (childo (wd/find-element driver {:css "#content > p > a"}) q)))
+  ;; Extra statements
+  (s+ (run 2 [q]
+           (fresh [child]
+                  (== child (wd/find-element driver {:css "#content > p > a"}))
+                  (childo child q))))
+  ;; Switch statement order
+  (s+ (run 2 [q]
+           (fresh [child]
+                  (childo child q)
+                  (== child (wd/find-element driver {:css "#content > p > a"}))))))
 
 (deftest test-displayedo
   ;; The page contains multiple elements that are displayed (visible).
@@ -115,9 +135,25 @@
   ;; The first input element is enabled.
   (s (run* [q]
            (enabledo (wd/find-element driver {:css "input"}))))
+  ;; Extra statements
+  (s (run* [q]
+           (== q (wd/find-element driver {:css "input"}))
+           (enabledo q)))
+  ;; Switch statement order
+  (s (run* [q]
+           (enabledo q)
+           (== q (wd/find-element driver {:css "input"}))))
   ;; The input element with id `disabled_field` is not enabled.
   (u (run* [q]
-           (enabledo (wd/find-element driver {:css "input#disabled_field"})))))
+           (enabledo (wd/find-element driver {:css "input#disabled_field"}))))
+  ;; Extra statements
+  (u (run* [q]
+           (== q (wd/find-element driver {:css "input#disabled_field"}))
+           (enabledo q)))
+  ;; Switch statement order
+  (u (run* [q]
+           (enabledo q)
+           (== q (wd/find-element driver {:css "input#disabled_field"})))))
 
 (deftest test-existso
   ;; At least two elements exist.
@@ -137,6 +173,14 @@
   ;; The first element with class `external` is present.
   (s (run* [q]
            (presento (wd/find-element driver {:class "external"}))))
+  ;; Extra statements
+  (s (run* [q]
+           (== q (wd/find-element driver {:class "external"}))
+           (presento q)))
+  ;; Switch statement order
+  (s (run* [q]
+           (presento q)
+           (== q (wd/find-element driver {:class "external"}))))
   ;; The first anchor tag with an `href` of `#pages` exists...
   (s (run* [q]
            (existso (wd/find-element driver {:tag :a, :href "#pages"}))))
@@ -148,8 +192,10 @@
            (presento (wd/find-element driver {:tag :a, :href "#pages"}))))
   ;; And together:
   (is (= (run* [q]
-               (existso (wd/find-element driver {:tag :a, :href "#pages"}))
-               (displayedo (wd/find-element driver {:tag :a, :href "#pages"})))
+               (fresh [el]
+                      (== el (wd/find-element driver {:tag :a, :href "#pages"}))
+                      (existso el)
+                      (displayedo el)))
          (run* [q]
                (presento (wd/find-element driver {:tag :a, :href "#pages"})))
          ())))
@@ -166,13 +212,22 @@
   ;; The option element with value `ayiti` is not selected.
   (u (run* [q]
            (selectedo (wd/find-element driver {:css "#countries option[value='ayiti']"}))))
+  ;; Triple check the logic engine's correctness
   (s-includes ["bharat"]
               (run 2 [q]
                    (fresh [the-el the-value]
                           (selectedo the-el)
                           (attributeo the-el :selected "selected")
                           (attributeo the-el :value the-value)
-                          (== q the-value)))))
+                          (== q the-value))))
+  ;; Switch statement order
+  (s-includes ["bharat"]
+              (run 2 [q]
+                   (fresh [the-el the-value]
+                          (== q the-value)
+                          (attributeo the-el :selected "selected")
+                          (attributeo the-el :value the-value)
+                          (selectedo the-el)))))
 
 (deftest test-sizeo
   ;; The first table on the page is 567x105
@@ -202,10 +257,18 @@
   (s (run 1 [q]
           (tago q "a")
           (texto q "Moustache")))
+  ;; Switch order of statements
+  (s (run 1 [q]
+          (texto q "Moustache")
+          (tago q "a")))
   ;; The first anchor tag has a class attribute of "external"
   (s (run 1 [q]
           (tago q "a")
           (attributeo q "class" "external")))
+  ;; Switch order of statements
+  (s (run 1 [q]
+          (attributeo q "class" "external")
+          (tago q "a")))
   ;; There are no elements with a tag of "textarea" on this page
   (u (run* [q]
            (tago q "textarea")))
@@ -214,7 +277,12 @@
     (s-as "Moustache"
           (run 1 [q]
                (tago first-anchor "a")
-               (texto first-anchor q)))))
+               (texto first-anchor q)))
+    ;; Switch order of statements
+    (s-as "Moustache"
+          (run 1 [q]
+               (texto first-anchor q)
+               (tago first-anchor "a")))))
 
 (deftest test-texto
   ;; The text of the first paragraph contains "Moustache"
@@ -229,26 +297,52 @@
                              (tago el "a")
                              (texto el txt)
                              (== q txt)))))
+  ;; Switch order of statements
+  (s-includes ["is amazing!" "clj-webdriver" "Stuart"]
+              (binding [*search-domain* {:css "a"}]
+                (run* [q]
+                      (fresh [el txt]
+                             (== q txt)
+                             (texto el txt)
+                             (tago el "a")))))
   ;; There's only one link on the page with text of "is amazing!"
   (s (binding [*search-domain* {:css "a"}]
        (run* [q]
              (tago q "a")
-             (texto q "is amazing!")))))
+             (texto q "is amazing!"))))
+  ;; Switch statement order
+  (s (binding [*search-domain* {:css "a"}]
+       (run* [q]
+             (texto q "is amazing!")
+             (tago q "a")))))
 
 (deftest test-visibleo
   ;; The first link on the page is not visible
   (u (run 1 [q]
           (== q (wd/find-element driver {:tag :a}))
           (visibleo q)))
+  ;; Switch statement order
+  (u (run 1 [q]
+          (visibleo q)
+          (== q (wd/find-element driver {:tag :a}))))
   ;; But first link with class of external is visible
   (s (run 1 [q]
           (== q (wd/find-element driver {:css "a.external"}))
           (visibleo q)))
+  ;; Switch statement order
+  (s (run 1 [q]
+          (visibleo q)
+          (== q (wd/find-element driver {:css "a.external"}))))
   ;; There are multiple visible paragraphs
   (s+ (binding [*search-domain* {:css "p"}]
         (run* [q]
               (tago q "p")
-              (visibleo q)))))
+              (visibleo q))))
+  ;; Switch statement order
+  (s+ (binding [*search-domain* {:css "p"}]
+        (run* [q]
+              (visibleo q)
+              (tago q "p")))))
 
 ;; And then tests combining all relations in various orders with
 ;; ground and fresh variables in all possible positions.
