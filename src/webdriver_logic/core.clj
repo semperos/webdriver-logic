@@ -69,16 +69,18 @@
                                      [elem attr value]
                                      [gelem gattr (careful-attribute gelem gattr)])
         (ground? gelem) (to-stream
-                         (for [attribute *html-attributes*]
-                           (unify a
-                                  [elem attr value]
-                                  [gelem attribute (careful-attribute gelem attribute)])))
+                         (map #(unify a
+                                      [elem attr value]
+                                      [gelem % (careful-attribute gelem %)])
+                              *html-attributes*))
         (ground? gattr) (to-stream
-                         (for [element (all-elements)]
-                           (unify a
-                                  [elem attr value]
-                                  [element gattr (careful-attribute element gattr)])))
+                         (map #(unify a
+                                      [elem attr value]
+                                      [% gattr (careful-attribute % gattr)])
+                              (all-elements)))
         :default (to-stream
+                  ;; Use `for` here because we need all combinations
+                  ;; of elements with legal attributes
                   (for [element (all-elements)
                         attribute *html-attributes*]
                     (unify a
@@ -94,22 +96,13 @@
       (cond
         (and (ground? gparent)
              (ground? gchild)) (if (some #{gchild} (all-child-elements gparent))
-                                 (unify a
-                                        [child-elem parent-elem]
-                                        [gchild gparent])
+                                 a
                                  (fail a))
              (ground? gparent) (to-stream
                                 (map #(unify a
                                              [child-elem parent-elem]
                                              [% gparent])
                                      (all-child-elements gparent)))
-             (ground? gchild) (to-stream
-                               (flatten
-                                (for [el-parent (all-elements)]
-                                  (map #(unify a
-                                               [child-elem parent-elem]
-                                               [% el-parent])
-                                       (all-child-elements el-parent)))))
              :default        (to-stream
                               (flatten
                                (for [el-parent (all-elements)]
@@ -125,16 +118,11 @@
     (let [gelem (walk a elem)]
       (if (fresh? gelem)
         (to-stream
-         (for [el (all-elements)]
-           (if (wd/displayed? el)
-             (unify a
-                    elem
-                    el)
-             (fail a))))
+         (map #(unify a elem %)
+              (filter #(wd/displayed? %)
+                      (all-elements))))
         (if (wd/displayed? gelem)
-          (unify a
-                 elem
-                 gelem)
+          a
           (fail a))))))
 
 (defn enabledo
@@ -144,16 +132,11 @@
     (let [gelem (walk a elem)]
       (if (fresh? gelem)
         (to-stream
-         (for [el (all-elements)]
-           (if (wd/enabled? el)
-             (unify a
-                    elem
-                    el)
-             (fail a))))
+         (map #(unify a elem %)
+              (filter #(wd/enabled? %)
+                      (all-elements))))
         (if (wd/enabled? gelem)
-          (unify a
-                 elem
-                 gelem)
+          a
           (fail a))))))
 
 (defn existso
@@ -163,19 +146,14 @@
     (let [gelem (walk a elem)]
       (if (fresh? gelem)
         (to-stream
-         (for [el (all-elements)]
-           (if (wd/exists? el)
-             (unify a
-                    elem
-                    el)
-             (fail a))))
+         (map #(unify a elem %)
+              (filter #(wd/exists? %)
+                      (all-elements))))
         (if (wd/exists? gelem)
-          (unify a
-                 elem
-                 gelem)
+          a
           (fail a))))))
 
-(defn intersecto [])
+;; (defn intersecto [])
 
 (defn presento
   "A goal that succeeds if the given `elem` both exists and is visible on the current page"
@@ -184,16 +162,11 @@
     (let [gelem (walk a elem)]
       (if (fresh? gelem)
         (to-stream
-         (for [el (all-elements)]
-           (if (wd/present? el)
-             (unify a
-                    elem
-                    el)
-             (fail a))))
+         (map #(unify a elem %)
+              (filter #(wd/present? %)
+                      (all-elements))))
         (if (wd/present? gelem)
-          (unify a
-                 elem
-                 gelem)
+          a
           (fail a))))))
 
 (defn selectedo
@@ -203,16 +176,11 @@
     (let [gelem (walk a elem)]
       (if (fresh? gelem)
         (to-stream
-         (for [el (all-elements)]
-           (if (wd/selected? el)
-             (unify a
-                    elem
-                    el)
-             (fail a))))
+         (map #(unify a elem %)
+              (filter #(wd/selected? %)
+                      (all-elements))))
         (if (wd/selected? gelem)
-          (unify a
-                 elem
-                 gelem)
+          a
           (fail a))))))
 
 (defn sizeo
@@ -225,16 +193,11 @@
         (ground? gelem) (unify a
                                [elem size]
                                [gelem (wd/size gelem)])
-        (ground? gsize)  (to-stream
-                          (for [el (all-elements)]
-                            (unify a
-                                   [elem size]
-                                   [el (wd/size el)])))
         :default        (to-stream
-                         (for [el (all-elements)]
-                           (unify a
-                                  [elem size]
-                                  [el (wd/size el)])))))))
+                         (map #(unify a
+                                      [elem size]
+                                      [% (wd/size %)])
+                              (all-elements)))))))
 
 (defn tago
   "A goal that succeeds if `tag` unifies with the tag name of the given `elem` on the current page"
@@ -244,30 +207,23 @@
       (cond
         (ground? gelem) (unify a tag (wd/tag gelem))
         :default        (to-stream
-                         (map #(unify a [elem tag] [% (wd/tag %)])
+                         (map #(unify a
+                                      [elem tag]
+                                      [% (wd/tag %)])
                               (all-elements)))))))
 
 (defn texto
   "A goal that succeeds if `text` unifies with the textual content of the given `elem` on the current page"
   [elem text]
   (fn [a]
-    (let [gelem (walk a elem)
-          gtext (walk a text)]
+    (let [gelem (walk a elem)]
       (cond
-        (ground? gelem) (unify a
-                               [elem text]
-                               [gelem (wd/text gelem)])
-        (ground? gtext)  (to-stream
-                         (for [el (all-elements)]
-                           (unify a
-                                  [elem text]
-                                  [el (wd/text el)])))
+        (ground? gelem) (unify a text (wd/text gelem))
         :default        (to-stream
-                         (for [el (all-elements)
-                               a-text (map wd/text (all-elements))]
-                           (unify a
-                                  [elem text]
-                                  [el (wd/text el)])))))))
+                         (map #(unify a
+                                      [elem text]
+                                      [% (wd/text %)])
+                              (all-elements)))))))
 
 (defn visibleo
   "A goal that succeeds if the given `elem` is visible on the current page"
@@ -276,10 +232,9 @@
     (let [gelem (walk a elem)]
       (if (fresh? gelem)
         (to-stream
-         (for [el (all-elements)]
-           (if (wd/visible? el)
-             a
-             (fail a))))
+         (map #(unify a elem %)
+              (filter #(wd/visible? %)
+                   (all-elements))))
         (if (wd/visible? gelem)
           a
           (fail a))))))
