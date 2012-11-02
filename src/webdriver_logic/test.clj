@@ -28,13 +28,13 @@
   "Assert that a run returns values that, when passed as a seq of values to `pred`, makes `pred` return a truthy value."
   [pred run-body]
   `(let [goal-values# ~run-body]
-     (test/is (~pred goal-values#) "This logic program should succeed and return a seq of values that, when passed to the given predicate, return true.")))
+     (test/is (~pred goal-values#) "This logic program should succeed and return a seq of values that, when passed to the given predicate, returns truthy.")))
 
 (defmacro u
   "Assert that a run fails."
   [run-body]
   `(let [goal-values# ~run-body]
-     (test/is (not (seq goal-values#)) "This logic program should fail.")))
+     (test/is (not (seq goal-values#)) "This logic program should fail, but does not.")))
 
 (defmacro s-as
   "Assert that the run is successful and returns a sequence of values equivalent to `coll`. If only a single value is expected, as a convenience `coll` may be this standalone value."
