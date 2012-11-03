@@ -229,6 +229,26 @@
                           (attributeo the-el :value the-value)
                           (selectedo the-el)))))
 
+(deftest test-locationo
+  ;; The first table on the page is at {:x 37, :y 295}
+  (s (run* [q]
+           (locationo (wd/find-element driver {:tag :table}) {:x 37, :y 295})))
+  ;; Tell me that the first table is at {:x 37, :y 295}
+  (s-as {:x 37, :y 295}
+        (run* [q]
+              (locationo (wd/find-element driver {:tag :table}) q)))
+  ;; The first table on the page is not at {:x 10, :y 10}
+  (u (run* [q]
+           (locationo (wd/find-element driver {:tag :table}) {:x 10 :y 10})))
+  ;; The element on the page located at {:x 37, :y 295} is a `table` element
+  (s-as "table"
+        (binding [*search-domain* {:css "#content *"}]
+          (run 1 [q]
+               (fresh [the-el the-tag]
+                      (locationo the-el {:x 37, :y 295})
+                      (tago the-el the-tag)
+                      (== q the-tag))))))
+
 (deftest test-sizeo
   ;; The first table on the page is 567x105
   (s (run* [q]

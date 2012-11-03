@@ -155,6 +155,22 @@
 
 ;; (defn intersecto [])
 
+(defn locationo
+  "A goal that succeeds if `location` unifies with the location of the given `elem` on the current page"
+  [elem location]
+  (fn [a]
+    (let [gelem (walk a elem)
+          glocation (walk a location)]
+      (cond
+        (ground? gelem) (unify a
+                               [elem location]
+                               [gelem (wd/location gelem)])
+        :default        (to-stream
+                         (map #(unify a
+                                      [elem location]
+                                      [% (wd/location %)])
+                              (all-elements)))))))
+
 (defn presento
   "A goal that succeeds if the given `elem` both exists and is visible on the current page"
   [elem]
@@ -250,8 +266,8 @@
                                  :args [{}]
                                  :include [ {:xpath "//a"} ]}
                     }
-                   "https://github.com"
-                   ;; "http://localhost:5744"
+                   ;; "https://github.com"
+                   "http://localhost:5744"
                    ))
   ;; For the Taxi API
   (t/set-driver! b)
