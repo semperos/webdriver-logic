@@ -111,6 +111,18 @@
                                               [% el-parent])
                                       (all-child-elements el-parent)))))))))
 
+(defn current-urlo
+  "A goal that succeeds if the given `current-url` unifies with the browser current-url"
+  [current-url]
+  (fn [a]
+    (let [gcurrent-url (walk a current-url)
+          browser-current-url (wd/current-url *driver*)]
+      (if (fresh? gcurrent-url)
+        (unify a current-url browser-current-url)
+        (if (= gcurrent-url browser-current-url)
+          a
+          (fail a))))))
+
 (defn displayedo
   "A goal that succeeds if the given `elem` is displayed (visible) on the current page"
   [elem]
@@ -241,6 +253,18 @@
                                       [% (wd/text %)])
                               (all-elements)))))))
 
+(defn titleo
+  "A goal that succeeds if the given `title` unifies with the browser title"
+  [title]
+  (fn [a]
+    (let [gtitle (walk a title)
+          browser-title (wd/title *driver*)]
+      (if (fresh? gtitle)
+        (unify a title browser-title)
+        (if (= gtitle browser-title)
+          a
+          (fail a))))))
+
 (defn visibleo
   "A goal that succeeds if the given `elem` is visible on the current page"
   [elem]
@@ -250,7 +274,7 @@
         (to-stream
          (map #(unify a elem %)
               (filter #(wd/visible? %)
-                   (all-elements))))
+                      (all-elements))))
         (if (wd/visible? gelem)
           a
           (fail a))))))

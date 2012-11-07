@@ -118,6 +118,18 @@
                   (childo child q)
                   (== child (wd/find-element driver {:css "#content > p > a"}))))))
 
+(deftest test-current-urlo
+  (s (run* [q]
+           (current-urlo test-base-url)))
+  (u (run* [q]
+           (current-urlo "foo")))
+  (s (run* [q]
+           (current-urlo q)
+           (== q test-base-url)))
+  (s (run* [q]
+           (== q test-base-url)
+           (current-urlo q))))
+
 (deftest test-displayedo
   ;; The page contains multiple elements that are displayed (visible).
   (s+ (run 2 [q]
@@ -335,6 +347,18 @@
        (run* [q]
              (texto q "is amazing!")
              (tago q "a")))))
+
+(deftest test-titleo
+  (s (run* [q]
+           (titleo "Ministache")))
+  (u (run* [q]
+           (titleo "foo")))
+  (s (run* [q]
+           (titleo q)
+           (== q "Ministache")))
+  (s (run* [q]
+           (== q "Ministache")
+           (titleo q))))
 
 (deftest test-visibleo
   ;; The first link on the page is not visible
