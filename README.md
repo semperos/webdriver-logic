@@ -8,7 +8,7 @@ The WebDriver Logic library provides a "mirror" of the [clj-webdriver](https://g
 
 ### Exploration ###
 
-Here's a simple example where we find the first element with a class of `site-logo`:
+Here's a simple example where we find the first element with a class of `footer_nav`:
 
 ```clj
 (use 'webdriver-logic.core)
@@ -16,8 +16,8 @@ Here's a simple example where we find the first element with a class of `site-lo
 (set-driver! {:browser :chrome} "https://github.com")
 
 (run 1 [q]
-  (attributeo q :class "site-logo"))
-;=> ({:webelement #<Tag: <a>, Class: site-logo, Href: https://github.com/, Object: [[ChromeDriver: chrome on MAC (6140efaa871769f2b7baa8fa885ebabc)] -> xpath: //*]>})
+  (attributeo q :class "footer_nav"))
+;=> ({:webelement #<Tag: <ul>, Text: GitHub  About  Blog  Features  Contact & Support  Training  ..., Class: footer_nav, Object: [[ChromeDriver: chrome on MAC (26459fb4e495c6bf086ea92acbaa7715)] -> xpath: //*]>})
 ```
 
 Or how about all the footer navigation sections?
