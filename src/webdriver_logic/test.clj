@@ -6,12 +6,13 @@
   "Deterministic test. Deterministic predicates are predicates that must succeed exactly once and, for well behaved predicates, leave no choicepoints.
 
    This form is not concerned with the actual value returned, just that the run was successful and returned only one value."
-  ([run-body] `(s ~run-body false))
-  ([run-body print?]
+  ([run-body] `(s ~run-body 1))
+  ([run-body n] `(s ~run-body ~n false))
+  ([run-body n print?]
      `(let [goal-values# ~run-body]
         (when ~print?
           (->> (pprint goal-values#) with-out-str (str "Goal output:\n") print))
-        (test/is (= (count goal-values#) 1) "This logic program should succeed with exactly one value."))))
+        (test/is (= (count goal-values#) ~n) (str "This logic program should succeed " ~n " time(s).")))))
 
 (defmacro s+
   "Assert that a run returns more than one value (non-deterministic).
