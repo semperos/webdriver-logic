@@ -280,16 +280,8 @@
           (fail a))))))
 
 (comment
-
-  ;; This webdriver-logic.core ns should use clj-webdriver.core (as it does)
-  ;; but using Taxi is preferred for higher-level use
   (require '[clj-webdriver.taxi :as t])
-  ;; Defining a var in this ns for convenience
-  (def b (wd/start {:browser :firefox
-                    :cache-spec {:strategy :basic
-                                 :args [{}]
-                                 :include [ {:xpath "//a"} ]}
-                    }
+  (def b (wd/start {:browser :chrome}
                    ;; "https://github.com"
                    "http://localhost:5744"
                    ))
@@ -297,9 +289,4 @@
   (t/set-driver! b)
   ;; For webdriver-logic, to make code more concise
   (set-driver! b)
-
-  (do
-    (wd/click (wd/find-element *driver* {:css "a[href*='login']"}))
-    (wd/input-text (wd/find-element *driver* {:css "input#login_field"}) "semperos"))
-
-  )
+)
