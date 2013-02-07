@@ -6,6 +6,8 @@ The WebDriver Logic library provides a "mirror" of the [clj-webdriver](https://g
 
 **Note:** This library is in the earliest stages of development. Feedback is welcome; use at your own risk.
 
+Check out the ClojureConj talk : [Web Testing with Logic Programming ](http://www.youtube.com/watch?v=09zlcS49zL0)
+
 ### Exploration ###
 
 Here's a simple example where we find the first element with a class of `footer_nav`:
@@ -166,7 +168,7 @@ lein test
 ### Logic Programming Materials ###
 
 #### Clojure/Lisp ####
-
+ 
  * [The Reasoned Schemer](http://mitpress.mit.edu/catalog/item/default.asp?ttype=2&tid=10663) (also [available in Kindle format](http://www.amazon.com/The-Reasoned-Schemer-ebook/dp/B004GEBQS6/ref=kinw_dp_ke?ie=UTF8&m=AG56TWVU5XWC2))
  * [README for core.logic](https://github.com/clojure/core.logic#readme)
  * Ambrose Bonnaire-Sergeant's [Logic Starter tutorial](https://github.com/frenchy64/Logic-Starter/wiki)
